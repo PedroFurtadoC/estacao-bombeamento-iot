@@ -1,0 +1,51 @@
+# ==========================================================
+# Mini Central de Monitoramento IoT - .gitignore
+# ==========================================================
+
+# --- Segredos e credenciais ---
+.env
+.env.*
+!.env.example
+firmware/src/secrets.h
+*.pem
+*.key
+*.token
+
+# --- PlatformIO / firmware ---
+.pio/
+.pioenvs/
+.piolibdeps/
+firmware/.vscode/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Dados locais / volumes ---
+infra/data/
+*.csv
+!docs/assets/*.csv
+dados/export/
+
+# --- IDE / SO ---
+.vscode/
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Material da disciplina (uso local, nao publicar) ---
+PROJETO_IOT_nota_parcial.pdf
+
+# --- Arquivos temporarios ---
+*.log
+*.tmp
+*.bak
+~$*

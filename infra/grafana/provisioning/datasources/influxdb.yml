@@ -1,0 +1,18 @@
+# Datasource provisionado como codigo.
+# As variaveis $INFLUX_* vem do environment do container (docker-compose.yml).
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB
+    uid: influxdb-iot
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    isDefault: true
+    editable: true
+    jsonData:
+      version: Flux
+      organization: $INFLUX_ORG
+      defaultBucket: $INFLUX_BUCKET
+    secureJsonData:
+      token: $INFLUX_TOKEN
