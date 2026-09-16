@@ -198,39 +198,23 @@ divisor de 10 kΩ e 20 kΩ mais um resistor de 4,7 kΩ ligando o fio de sinal ao
 5 V. Com pull-up interno ou sem ele, o GPIO recebe entre 2,9 V e 3,0 V no nível
 alto, que a ESP32 lê como alto com folga e sem passar do limite.
 
-### Como levar os fios para a protoboard
+### Ligando os fios na protoboard
 
-Fio flexível não segura na protoboard e ainda pode encostar no furo vizinho.
-Não corte o conector por impulso, ele é a parte mais fácil de usar. Em ordem de
-preferência:
+O sensor vem com conector fêmea de 2,54 mm, então não precisa cortar nem soldar
+nada. Espete jumpers macho-macho dentro do conector e leve a outra ponta para a
+protoboard.
 
-1. **O sensor veio com conector fêmea de 2,54 mm**, que é o caso mais comum dos
-   kits para Arduino. Basta espetar jumpers macho-macho dentro do conector e
-   levar a outra ponta para a protoboard. Zero modificação, e dá para desmontar
-   depois;
-2. **Soldar uma barra de pinos macho** nas pontas dos fios. É a solução mais
-   firme e continua reversível, porque o sensor não é danificado;
-3. **Estanhar as pontas**, se você cortar mesmo. Corte, desencape uns 5 mm,
-   torça bem os filamentos e passe solda na ponta para virar um pino rígido.
-   Sem estanhar, o fio esfarela dentro do furo e faz mau contato;
-4. **Borne de parafuso** na protoboard, se tiverem um. Prende o fio flexível
-   sem solda nenhuma.
+Identificação dos fios, que segue a convenção dos sensores hall de vazão:
 
-Só corte se nenhuma das opções acima der, e tenha ferro de solda por perto.
+| Cor | Função | Vai para |
+|---|---|---|
+| Vermelho | VCC, de 5 V a 18 V | VIN da ESP32 |
+| Preto | GND | trilho de GND |
+| Amarelo | sinal de pulsos | GPIO 33, passando pelo divisor ou pelo pull-up |
 
-### Identificando os fios
-
-A convenção dos sensores hall de vazão é por cor:
-
-| Cor | Função |
-|---|---|
-| Vermelho | VCC, de 5 V a 18 V |
-| Preto | GND |
-| Amarelo | sinal de pulsos |
-
-Se o seu tiver um quarto fio ou um quarto pino no conector, ele costuma ser
-blindagem ou não ter uso. Na dúvida, confirme com o multímetro em continuidade:
-o preto tem continuidade com a carcaça metálica na maioria dos modelos.
+Se algum jumper ficar folgado no conector, aperte levemente o contato metálico
+dele com um alicate antes de espetar de novo. Mau contato aqui aparece como
+vazão travada em 0.
 
 ## Antes de energizar, confira
 
