@@ -15,6 +15,10 @@ pio device monitor                               # monitor serial 115200
 
 ## Ligações (wiring)
 
+> Esquema completo, com diagrama de cada placa, cálculo dos divisores e como
+> adaptar os fios do sensor de vazão para a protoboard:
+> [`../docs/10-esquema-eletrico.md`](../docs/10-esquema-eletrico.md).
+
 ### Máquina 01: DHT22 + vazão (hall) + LED RGB (HW-479)
 
 | Módulo | Pino módulo | ESP32 |
@@ -67,6 +71,12 @@ sensor e do divisor precisa ser o mesmo.
 > **Alimentação da M03**: o aquecedor do MQ consome cerca de 150 mA. Alimente
 > a placa por uma porta USB boa do notebook ou por um carregador de 5 V com
 > 1 A ou mais, senão o Wi-Fi pode reiniciar durante os picos de transmissão.
+
+> **Saída do sensor de vazão**: é open collector, ou seja, só puxa para o GND e
+> depende de um resistor de pull-up. Meça o fio de sinal antes de ligar no GPIO
+> para saber se o seu modelo já tem pull-up interno para 5 V (aí vale o divisor)
+> ou não (aí vale um pull-up de 10 kΩ para o 3V3, sem divisor). O procedimento
+> está em [`../docs/10-esquema-eletrico.md`](../docs/10-esquema-eletrico.md).
 
 > **Vazão em bancada seca**: sem água a leitura fica em 0 L/min (comportamento
 > correto de bomba a seco); soprar na turbina gera vazão para a demonstração.

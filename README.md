@@ -121,6 +121,7 @@ Campos extras opcionais: `flow` (vazão em L/min, sensor hall nas M01/M03),
 | [07-testes.md](docs/07-testes.md) | Plano e evidências de testes |
 | [08-documento-tecnico.md](docs/08-documento-tecnico.md) | Montagem do documento final de entrega |
 | [09-guia-de-bancada.md](docs/09-guia-de-bancada.md) | Roteiro de montagem e operação no dia da apresentação |
+| [10-esquema-eletrico.md](docs/10-esquema-eletrico.md) | Ligação pino a pino das três placas, divisores e adaptação dos sensores |
 
 ## Equipe
 

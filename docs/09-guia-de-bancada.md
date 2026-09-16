@@ -11,10 +11,12 @@ notebook: nenhum serviço na nuvem, nenhuma dependência de internet.
 | M02 | DHT22 + HW-484 | 4 (DHT), 34 (som) | nenhum |
 | M03 | DHT22 + MQ + vazão hall | 4 (DHT), 34 (MQ), 33 (vazão) | LED flash HW-481 (25) |
 
-Ligações detalhadas e os divisores de tensão: [`../firmware/README.md`](../firmware/README.md).
+Esquema elétrico completo, pino a pino: [`10-esquema-eletrico.md`](10-esquema-eletrico.md).
 
-Regra rápida: **DHT22 e HW-484 em 3,3 V** (ligação direta); **MQ e vazão em
-5 V** (sempre com divisor 10 kΩ / 20 kΩ antes do GPIO).
+Regra rápida: **DHT22 e HW-484 em 3,3 V**, ligação direta no GPIO. **MQ e
+vazão em 5 V**, com divisor de 10 kΩ e 20 kΩ antes do GPIO. O sensor de vazão
+ainda precisa de pull-up, e o esquema explica como descobrir se o seu modelo já
+tem um interno.
 
 ## Preparação (uma vez)
 
@@ -104,7 +106,7 @@ No monitor serial você deve ver o Wi-Fi conectar, o MQTT conectar e uma linha
 | `[mqtt] falhou (rc=-2)` | IP do broker errado ou firewall do Windows | Conferir o IP com `ipconfig`; liberar a porta 1883 no firewall |
 | Dashboard vazio | Ingestão parada ou sem dados | `docker compose --project-directory infra logs ingestao` |
 | Temperatura marcando `nan` | DHT22 mal ligado ou no pino errado | Conferir VCC em 3,3 V e o dado no GPIO 4 |
-| Vazão sempre em 0 | Bancada seca (esperado) ou divisor mal montado | Soprar na turbina; se continuar em 0, revisar o divisor |
+| Vazão sempre em 0 | Bancada seca (esperado), divisor mal montado ou falta de pull-up | Soprar na turbina; se continuar em 0, conferir o divisor e o pull-up no esquema elétrico |
 | Gás sempre alto ou saturado | MQ ainda aquecendo | Aguardar cerca de 2 min após ligar |
 | ESP32 reiniciando sozinha | Alimentação fraca na M03 | Usar carregador de 5 V com 1 A ou mais |
 
