@@ -1,24 +1,52 @@
 {
   "uid": "mini-central-iot",
   "title": "Mini Central de Monitoramento IoT",
-  "tags": ["iot", "fabrica", "unaerp"],
+  "tags": [
+    "iot",
+    "fabrica",
+    "unaerp"
+  ],
   "timezone": "browser",
   "editable": true,
   "graphTooltip": 1,
   "refresh": "5s",
   "schemaVersion": 39,
-  "time": { "from": "now-1h", "to": "now" },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Visão geral",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
     {
       "id": 1,
       "type": "stat",
       "title": "Painel 1: Temperatura atual",
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 0 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"temperature\")\n  |> group(columns: [\"machine\"])\n  |> last()\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"temperature\" and r.machine =~ /^${maquina:regex}$/)\n  |> group(columns: [\"machine\"])\n  |> last()\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
         }
       ],
       "fieldConfig": {
@@ -29,9 +57,18 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 75 },
-              { "color": "red", "value": 80 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
             ]
           }
         },
@@ -39,23 +76,37 @@
       },
       "options": {
         "colorMode": "background",
-        "graphMode": "none",
+        "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       }
     },
     {
       "id": 6,
       "type": "stat",
-      "title": "Painel 6: Máquinas em condição normal",
-      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 0 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
+      "title": "Painel 6: Máquinas normais",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"status_code\")\n  |> group(columns: [\"machine\"])\n  |> last()\n  |> map(fn: (r) => ({ r with _value: if r._value == 0 then 1 else 0 }))\n  |> group()\n  |> sum()"
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"status_code\" and r.machine =~ /^${maquina:regex}$/)\n  |> group(columns: [\"machine\"])\n  |> last()\n  |> map(fn: (r) => ({ r with _value: if r._value == 0 then 1 else 0 }))\n  |> group()\n  |> sum()"
         }
       ],
       "fieldConfig": {
@@ -68,9 +119,18 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "red", "value": null },
-              { "color": "yellow", "value": 2 },
-              { "color": "green", "value": 3 }
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
             ]
           }
         },
@@ -81,20 +141,34 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       }
     },
     {
       "id": 7,
       "type": "stat",
-      "title": "Painel 7: Eventos de alerta (janela)",
-      "gridPos": { "h": 6, "w": 4, "x": 12, "y": 0 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
+      "title": "Painel 7: Eventos de alerta",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"status_code\")\n  |> filter(fn: (r) => r._value >= 1)\n  |> group()\n  |> count()"
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"status_code\" and r.machine =~ /^${maquina:regex}$/)\n  |> filter(fn: (r) => r._value >= 1)\n  |> group()\n  |> count()"
         }
       ],
       "fieldConfig": {
@@ -105,44 +179,23 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 1 },
-              { "color": "red", "value": 10 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "orange",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
             ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "textMode": "auto"
-      }
-    },
-    {
-      "id": 9,
-      "type": "stat",
-      "title": "Umidade da casa de bombas",
-      "gridPos": { "h": 6, "w": 4, "x": 16, "y": 0 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"humidity\")\n  |> group(columns: [\"machine\"])\n  |> last()\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "humidity",
-          "displayName": "${__field.labels.machine}",
-          "decimals": 1,
-          "noValue": "sem sensor",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "blue", "value": null }]
           }
         },
         "overrides": []
@@ -152,16 +205,83 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Umidade (casa de bombas)",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"humidity\" and r.machine =~ /^${maquina:regex}$/)\n  |> group(columns: [\"machine\"])\n  |> last()\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "humidity",
+          "displayName": "${__field.labels.machine}",
+          "decimals": 1,
+          "noValue": "aguardando sensor",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       }
     },
     {
       "id": 8,
       "type": "gauge",
-      "title": "Gás na casa de bombas (M03)",
-      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 0 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
+      "title": "Gás (casa de bombas)",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
       "targets": [
         {
           "refId": "A",
@@ -174,34 +294,70 @@
           "min": 0,
           "max": 100,
           "decimals": 1,
-          "noValue": "sem sensor",
+          "noValue": "aguardando sensor",
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 20 },
-              { "color": "red", "value": 40 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 40
+              }
             ]
           }
         },
         "overrides": []
       },
       "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       }
     },
     {
+      "id": 101,
+      "type": "row",
+      "title": "Sinais ao longo do tempo",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "panels": []
+    },
+    {
       "id": 2,
       "type": "timeseries",
       "title": "Painel 2: Temperatura ao longo do tempo",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"temperature\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"temperature\" and r.machine =~ /^${maquina:regex}$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
         }
       ],
       "fieldConfig": {
@@ -215,38 +371,112 @@
             "spanNulls": true,
             "showPoints": "never",
             "axisLabel": "°C",
-            "thresholdsStyle": { "mode": "line" }
+            "thresholdsStyle": {
+              "mode": "line"
+            }
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 75 },
-              { "color": "red", "value": 80 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
             ]
-          }
+          },
+          "min": 60,
+          "max": 90
         },
         "overrides": [
-          { "matcher": { "id": "byName", "options": "M01" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
-          { "matcher": { "id": "byName", "options": "M02" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
-          { "matcher": { "id": "byName", "options": "M03" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }] }
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M01"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M02"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d95926"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M03"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          }
         ]
       },
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "desc" }
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       }
     },
     {
       "id": 3,
       "type": "timeseries",
       "title": "Painel 3: Vibração ao longo do tempo",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"vibration\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"vibration\" and r.machine =~ /^${maquina:regex}$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
         }
       ],
       "fieldConfig": {
@@ -260,38 +490,112 @@
             "spanNulls": true,
             "showPoints": "never",
             "axisLabel": "mm/s",
-            "thresholdsStyle": { "mode": "line" }
+            "thresholdsStyle": {
+              "mode": "line"
+            }
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 3.5 },
-              { "color": "red", "value": 5 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 3.5
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
             ]
-          }
+          },
+          "min": 0,
+          "max": 8
         },
         "overrides": [
-          { "matcher": { "id": "byName", "options": "M01" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
-          { "matcher": { "id": "byName", "options": "M02" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
-          { "matcher": { "id": "byName", "options": "M03" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }] }
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M01"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M02"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d95926"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M03"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          }
         ]
       },
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "desc" }
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       }
     },
     {
       "id": 4,
       "type": "timeseries",
       "title": "Painel 4: Corrente elétrica",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"current\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"current\" and r.machine =~ /^${maquina:regex}$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
         }
       ],
       "fieldConfig": {
@@ -304,38 +608,112 @@
             "fillOpacity": 8,
             "spanNulls": true,
             "showPoints": "never",
-            "thresholdsStyle": { "mode": "line" }
+            "thresholdsStyle": {
+              "mode": "line"
+            }
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 9 },
-              { "color": "red", "value": 11 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 9
+              },
+              {
+                "color": "red",
+                "value": 11
+              }
             ]
-          }
+          },
+          "min": 4,
+          "max": 14
         },
         "overrides": [
-          { "matcher": { "id": "byName", "options": "M01" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
-          { "matcher": { "id": "byName", "options": "M02" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
-          { "matcher": { "id": "byName", "options": "M03" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }] }
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M01"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M02"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d95926"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M03"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          }
         ]
       },
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "desc" }
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       }
     },
     {
       "id": 5,
       "type": "timeseries",
       "title": "Painel 5: Rotação da máquina (RPM)",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"rotation\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"rotation\" and r.machine =~ /^${maquina:regex}$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
         }
       ],
       "fieldConfig": {
@@ -352,30 +730,98 @@
           },
           "thresholds": {
             "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          }
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "min": 3100,
+          "max": 3800
         },
         "overrides": [
-          { "matcher": { "id": "byName", "options": "M01" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
-          { "matcher": { "id": "byName", "options": "M02" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
-          { "matcher": { "id": "byName", "options": "M03" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }] }
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M01"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M02"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d95926"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M03"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          }
         ]
       },
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "desc" }
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       }
     },
     {
       "id": 11,
       "type": "timeseries",
       "title": "Vazão da motobomba (L/min)",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"flow\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r._field == \"flow\" and r.machine =~ /^${maquina:regex}$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"machine\"])"
         }
       ],
       "fieldConfig": {
@@ -394,42 +840,136 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "red", "value": null },
-              { "color": "yellow", "value": 10 },
-              { "color": "green", "value": 20 }
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "green",
+                "value": 20
+              }
             ]
-          }
+          },
+          "min": 0,
+          "max": 50
         },
         "overrides": [
-          { "matcher": { "id": "byName", "options": "M01" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
-          { "matcher": { "id": "byName", "options": "M02" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
-          { "matcher": { "id": "byName", "options": "M03" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }] }
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M01"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M02"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d95926"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "M03"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          }
         ]
       },
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "desc" }
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       }
+    },
+    {
+      "id": 102,
+      "type": "row",
+      "title": "Detalhe das leituras",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "panels": []
     },
     {
       "id": 10,
       "type": "table",
       "title": "Últimas leituras",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
-      "datasource": { "type": "influxdb", "uid": "influxdb-iot" },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-iot"
+      },
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\")\n  |> pivot(rowKey: [\"_time\", \"machine\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 12)\n  |> keep(columns: [\"_time\", \"machine\", \"temperature\", \"vibration\", \"current\", \"rotation\", \"flow\", \"humidity\", \"gas\", \"status_code\"])"
+          "query": "from(bucket: \"iot\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"telemetria\" and r.machine =~ /^${maquina:regex}$/)\n  |> pivot(rowKey: [\"_time\", \"machine\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 12)\n  |> keep(columns: [\"_time\", \"machine\", \"temperature\", \"vibration\", \"current\", \"rotation\", \"flow\", \"humidity\", \"gas\", \"status_code\"])"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "filterable": false }
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
+          }
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "status_code" },
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
             "properties": [
               {
                 "id": "mappings",
@@ -437,14 +977,43 @@
                   {
                     "type": "value",
                     "options": {
-                      "0": { "text": "NORMAL", "color": "green", "index": 0 },
-                      "1": { "text": "ATENÇÃO", "color": "yellow", "index": 1 },
-                      "2": { "text": "CRÍTICO", "color": "red", "index": 2 }
+                      "0": {
+                        "text": "NORMAL",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "1": {
+                        "text": "ATENÇÃO",
+                        "color": "yellow",
+                        "index": 1
+                      },
+                      "2": {
+                        "text": "CRÍTICO",
+                        "color": "red",
+                        "index": 2
+                      }
                     }
                   }
                 ]
               },
-              { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Horário"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "time:HH:mm:ss"
+              }
             ]
           }
         ]
@@ -452,7 +1021,64 @@
       "options": {
         "showHeader": true,
         "sortBy": []
-      }
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "_time": 0,
+              "machine": 1,
+              "temperature": 2,
+              "vibration": 3,
+              "current": 4,
+              "rotation": 5,
+              "flow": 6,
+              "status_code": 7
+            },
+            "renameByName": {
+              "_time": "Horário",
+              "machine": "Máquina",
+              "temperature": "Temperatura (°C)",
+              "vibration": "Vibração (mm/s)",
+              "current": "Corrente (A)",
+              "rotation": "Rotação (RPM)",
+              "flow": "Vazão (L/min)",
+              "status_code": "Status"
+            }
+          }
+        }
+      ]
     }
-  ]
+  ],
+  "description": "Monitoramento em tempo real de tres conjuntos motobomba de uma estacao de bombeamento de agua. Dados publicados por 3 ESP32 via MQTT.",
+  "templating": {
+    "list": [
+      {
+        "name": "maquina",
+        "label": "Motobomba",
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "influxdb-iot"
+        },
+        "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"iot\", tag: \"machine\")",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
+      }
+    ]
+  }
 }

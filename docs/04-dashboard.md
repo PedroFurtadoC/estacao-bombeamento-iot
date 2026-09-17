@@ -70,6 +70,25 @@ from(bucket: "iot")
   M03 roxo) para leitura imediata;
 - Linha de threshold desenhada nos gráficos de temperatura (75 °C e 80 °C).
 
+## Alertas
+
+Além dos painéis, o Grafana tem **duas regras de alerta provisionadas como
+código** em `infra/grafana/provisioning/alerting/alertas.yaml`. Elas sobem
+junto com a stack, igual ao dashboard, e são avaliadas a cada minuto.
+
+| Regra | Condição | Por que importa |
+|---|---|---|
+| Temperatura critica na motobomba | temperatura acima de 80 °C por 1 min | faixa crítica definida no enunciado |
+| Vibracao critica (possivel cavitacao) | vibração acima de 5 mm/s por 1 min | assinatura de cavitação ou desgaste de rolamento |
+
+Cada regra gera **uma instância por máquina**, então o alerta identifica qual
+motobomba está em falha. Se uma ESP32 parar de publicar, a regra entra em
+`NoData`, o que também sinaliza dispositivo offline.
+
+Para ver o estado: menu Alerting, Alert rules. Teste validado em bancada com a
+M01 publicando 85 °C, que levou a regra a `Firing` para a M01 e manteve a M02 e
+a M03 em `Normal`.
+
 ## Evidências para a entrega
 
 Capturar e salvar em `docs/assets/`:

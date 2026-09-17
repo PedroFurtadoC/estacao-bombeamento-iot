@@ -46,6 +46,12 @@ preditiva busca antecipar.
 
 ## 6. Qual informação deveria gerar um alerta?
 
+> Esta resposta está **implementada**, não só descrita: há duas regras de
+> alerta ativas no Grafana, provisionadas em
+> `infra/grafana/provisioning/alerting/alertas.yaml`, uma para temperatura
+> acima de 80 °C e outra para vibração acima de 5 mm/s, ambas com uma instância
+> por máquina. Detalhes em [`04-dashboard.md`](04-dashboard.md).
+
 Qualquer sinal na faixa **crítica** (temperatura > 80 °C, vibração > 5 mm/s,
 corrente > 11 A, rotação fora de 3300-3700 RPM, gás > 40 %) e também a
 **transição** para atenção quando persistente (> 2 min), além de máquina

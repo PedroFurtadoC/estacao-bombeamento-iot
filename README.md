@@ -43,11 +43,15 @@ Cada componente é justificado em [`docs/02-arquitetura.md`](docs/02-arquitetura
 ├── infra/
 │   ├── docker-compose.yml   # Mosquitto + InfluxDB + Grafana + ingestão
 │   ├── mosquitto/           # Configuração do broker
-│   └── grafana/             # Datasource e dashboard provisionados como código
+│   └── grafana/             # Datasource, dashboard e alertas provisionados como código
 └── scripts/                 # Atalhos PowerShell (subir stack, simular, exportar)
 ```
 
 ## Como executar
+
+> **Primeira vez nesta máquina?** Siga
+> [`docs/11-comecando-do-zero.md`](docs/11-comecando-do-zero.md), que leva do
+> clone até o dashboard funcionando, sem precisar de ESP32 nem sensor.
 
 Pré-requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop/),
 [Python 3.11+](https://www.python.org/) e [PlatformIO](https://platformio.org/)
@@ -121,7 +125,8 @@ Campos extras opcionais: `flow` (vazão em L/min, sensor hall nas M01/M03),
 | [07-testes.md](docs/07-testes.md) | Plano e evidências de testes |
 | [08-documento-tecnico.md](docs/08-documento-tecnico.md) | Montagem do documento final de entrega |
 | [09-guia-de-bancada.md](docs/09-guia-de-bancada.md) | Roteiro de montagem e operação no dia da apresentação |
-| [10-esquema-eletrico.md](docs/10-esquema-eletrico.md) | Ligação pino a pino das três placas, divisores e adaptação dos sensores |
+| [10-esquema-eletrico.md](docs/10-esquema-eletrico.md) | Ligação pino a pino das três placas e divisores de tensão |
+| [11-comecando-do-zero.md](docs/11-comecando-do-zero.md) | Do clone ao dashboard funcionando, para quem nunca rodou o projeto |
 
 ## Equipe
 

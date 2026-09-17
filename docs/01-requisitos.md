@@ -145,6 +145,7 @@ Mapa de montagem do documento final em
 - [ ] ≥ 500 registros no InfluxDB (verificar com `backend/tools/exportar_csv.py`)
 - [ ] Pelo menos 1 anomalia registrada e visível no dashboard
 - [ ] 7 painéis mínimos funcionando no Grafana
+- [ ] Regras de alerta ativas (temperatura e vibração críticas)
 - [ ] 10 perguntas do Desafio 4 respondidas com base nos dados reais coletados
 - [ ] Documento técnico montado (10 seções) em DOC/PDF
 - [ ] Slides prontos (10 min) + ensaio com protótipo e hotspot
