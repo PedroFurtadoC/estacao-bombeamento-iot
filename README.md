@@ -49,48 +49,23 @@ Cada componente é justificado em [`docs/02-arquitetura.md`](docs/02-arquitetura
 
 ## Como executar
 
-> **Primeira vez nesta máquina?** Siga
-> [`docs/11-comecando-do-zero.md`](docs/11-comecando-do-zero.md), que leva do
-> clone até o dashboard funcionando, sem precisar de ESP32 nem sensor.
-
-Pré-requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop/),
-[Python 3.11+](https://www.python.org/) e [PlatformIO](https://platformio.org/)
-(extensão do VS Code ou `pip install platformio`).
-
-### 1. Subir a stack (broker + banco + dashboard)
+Pré-requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+e [Python 3.11+](https://www.python.org/). Para gravar as ESP32, também
+[PlatformIO](https://platformio.org/).
 
 ```powershell
-Copy-Item infra/.env.example infra/.env   # ajuste as senhas se desejar
-docker compose --project-directory infra up -d
+Copy-Item infra/.env.example infra/.env            # crie e ajuste as senhas
+docker compose --project-directory infra up -d     # sobe broker, banco, back-end e dashboard
+python backend/simulator/simulador.py --backfill 50m --intervalo 10 --anomalia
 ```
 
-- Grafana: <http://localhost:3000> (usuário/senha em `infra/.env`)
-- InfluxDB: <http://localhost:8086>
-- MQTT: `localhost:1883`
+Abra <http://localhost:3000> com o usuário e a senha do `infra/.env`. O
+dashboard, a conexão com o banco e os alertas já sobem configurados.
 
-### 2. Gerar dados simulados (garante os 500+ registros)
-
-```powershell
-python -m pip install -r backend/simulator/requirements.txt
-python backend/simulator/simulador.py --backfill 2h --intervalo 10 --anomalia
-```
-
-### 3. Gravar o firmware nas ESP32
-
-```powershell
-Copy-Item firmware/src/secrets.h.example firmware/src/secrets.h   # preencha Wi-Fi e IP do broker
-pio run -d firmware -e maquina01 -t upload   # repita com -e maquina02 / -e maquina03
-```
-
-> Na apresentação, use o hotspot do notebook (não depender do Wi-Fi da
-> universidade). Roteiro completo do dia, incluindo as ligações e o que fazer
-> se algo falhar: [`docs/09-guia-de-bancada.md`](docs/09-guia-de-bancada.md).
-
-### 4. Exportar a base de dados (entrega)
-
-```powershell
-python backend/tools/exportar_csv.py --saida dados/export/telemetria.csv
-```
+Passo a passo completo, incluindo instalação e solução de problemas:
+[`docs/11-comecando-do-zero.md`](docs/11-comecando-do-zero.md). Para montar o
+hardware: [`docs/09-guia-de-bancada.md`](docs/09-guia-de-bancada.md) e
+[`docs/10-esquema-eletrico.md`](docs/10-esquema-eletrico.md).
 
 ## Contrato de dados
 
@@ -113,6 +88,10 @@ Campos extras opcionais: `flow` (vazão em L/min, sensor hall nas M01/M03),
 [`docs/03-modelo-de-dados.md`](docs/03-modelo-de-dados.md).
 
 ## Documentação
+
+Os documentos são numerados na ordem de leitura. De **01 a 08** acompanham a
+entrega, cada um alimentando uma seção do documento técnico. De **09 a 11** são
+guias práticos de uso.
 
 | Documento | Conteúdo |
 |---|---|
