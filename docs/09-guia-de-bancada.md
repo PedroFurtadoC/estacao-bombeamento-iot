@@ -11,7 +11,8 @@ notebook: nenhum serviço na nuvem, nenhuma dependência de internet.
 | M02 | DHT22 + HW-484 | 4 (DHT), 34 (som) | nenhum |
 | M03 | DHT22 + MQ + vazão hall | 4 (DHT), 34 (MQ), 33 (vazão) | LED flash HW-481 (25) |
 
-Esquema elétrico completo, pino a pino: [`10-esquema-eletrico.md`](10-esquema-eletrico.md).
+Esquema elétrico completo, pino a pino, e a **lista do que levar para a
+bancada**: [`10-esquema-eletrico.md`](10-esquema-eletrico.md).
 
 Regra rápida: **DHT22 e HW-484 em 3,3 V**, ligação direta no GPIO. **MQ e
 vazão em 5 V**, com divisor de 10 kΩ e 20 kΩ antes do GPIO. O sensor de vazão

@@ -3,6 +3,36 @@
 Ligação completa das três motobombas, pino a pino. Monte sempre na ordem deste
 documento, do sensor mais seguro para o mais arriscado.
 
+## O que ter em mãos antes de começar
+
+| Item | Quantidade | Observação |
+|---|---|---|
+| ESP32 DevKit | 3 (mais reservas) | uma por motobomba |
+| Cabo USB de dados | 3 | cabo só de carga não grava a placa |
+| Protoboard | 3 pequenas ou 1 grande | uma montagem por máquina facilita |
+| Jumpers macho-macho | cerca de 30 | ligação geral e conector do sensor de vazão |
+| DHT22 / AM2302 | 3 | uma por placa |
+| Sensor de vazão hall | 2 | M01 e M03 |
+| HW-484 (microfone) | 1 | M02 |
+| MQ (gás) | 1 | M03 |
+| HW-479 (LED RGB) | 1 | M01 |
+| HW-481 (LED flash) | 1 | M03 |
+| Resistor de 10 kΩ | 8 | divisores de tensão e pull-up |
+| Resistor de 20 kΩ | 4 | divisores de tensão |
+| Multímetro | 1 | recomendado, evita queimar placa |
+| Carregador de 5 V, 1 A ou mais | 1 | para a M03, por causa do MQ |
+
+Sobre os resistores: são **3 divisores obrigatórios**, um para a vazão da M01 e
+dois na M03, para o MQ e para a vazão. Pode virar um quarto se o seu HW-484 for
+da versão de 5 V. Cada divisor usa um resistor de 10 kΩ e um de 20 kΩ.
+
+Se não encontrar os de 20 kΩ, dois de 10 kΩ em série fazem o mesmo papel, e aí
+12 resistores de 10 kΩ resolvem tudo. Vale qualquer par na proporção de 1 para
+2, como 1 kΩ com 2 kΩ.
+
+Sem multímetro dá para montar, mas o documento indica em quais pontos ele
+evita erro caro.
+
 ## Regras que valem para as três placas
 
 **GND é comum.** Todo GND (da ESP32, dos sensores, dos divisores e dos LEDs)
