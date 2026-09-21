@@ -7,14 +7,14 @@ flowchart LR
     subgraph Maquinas["Estação de bombeamento (3 conjuntos motobomba)"]
         direction TB
         subgraph M01["Motobomba 01"]
-            S1["DHT22 + vazão hall<br/>temperatura + vazão"] --> E1["ESP32<br/>DevKit"]
+            S1["DHT22 + vazão hall<br/>temperatura + vazão"] --> E1["ESP32-S2<br/>Mini"]
             E1 --> A1["LED RGB HW-479<br/>semáforo de status"]
         end
         subgraph M02["Motobomba 02"]
-            S2["DHT22 + HW-484<br/>temperatura + vibração/cavitação"] --> E2["ESP32<br/>DevKit"]
+            S2["DHT22 + vazão hall<br/>temperatura + vazão"] --> E2["ESP32-S2<br/>Mini"]
         end
         subgraph M03["Motobomba 03"]
-            S3["DHT22 + MQ + vazão hall<br/>temperatura + gás + vazão"] --> E3["ESP32<br/>DevKit"]
+            S3["DHT22 + MQ<br/>temperatura + gás"] --> E3["ESP32<br/>DevKit"]
             E3 --> A3["LED flash HW-481<br/>alarme crítico"]
         end
     end
@@ -33,11 +33,10 @@ flowchart LR
 | Sensor | Papel | Justificativa |
 |---|---|---|
 | **DHT22/AM2302** (todas) | Temperatura do motor (+ umidade da casa de bombas) | Sensor digital calibrado, 1 fio de dados, biblioteca madura. Um por ESP32, espelhando a sugestão do professor ("um BME280 por ESP32"). A umidade é bônus com significado no cenário: umidade alta = indício de vazamento na casa de bombas. |
-| **HW-484** (M02) | Vibração/cavitação | Microfone de eletreto + LM393 com saída analógica; o RMS do sinal captura a assinatura acústica da bomba. **Cavitação e desgaste de rolamento são fenômenos audíveis**, um proxy didático tecnicamente coerente de um acelerômetro industrial. |
 | **MQ** (M03) | Gás/qualidade do ar | Sinal de segurança escolhido pelo grupo (permitido pelo enunciado); monitora acúmulo de gases na casa de bombas: segurança de espaço confinado, preocupação real em estações de bombeamento. |
-| **Sensor de vazão hall** (M01 e M03) | Vazão (L/min) | Turbina com sensor hall gera pulsos proporcionais à vazão. É o principal indicador de processo de uma bomba: queda indica obstrução ou cavitação, zero indica operação a seco. Fecha o par causa/efeito com a corrente do motor. |
+| **Sensor de vazão hall** (M01 e M02) | Vazão (L/min) | Turbina com sensor hall gera pulsos proporcionais à vazão. É o principal indicador de processo de uma bomba: queda indica obstrução ou cavitação, zero indica operação a seco. Fecha o par causa/efeito com a corrente do motor. |
 
-Sinais sem sensor físico (corrente e rotação, e vibração fora da M02) são
+Sinais sem sensor físico (corrente, rotação e vibração em todas; vazão na M03) são
 **simulados no próprio ESP32** com variação realista e injeção de anomalias,
 prática permitida pelo enunciado e comum em gêmeos digitais/bancadas de teste.
 A corrente simulada modela a carga do motor (detecção de operação a seco) e a

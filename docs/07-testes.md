@@ -28,7 +28,7 @@ Plano de testes do protótipo. Marcar "ok" ou "falhou" e anotar evidências (pri
 | T3.1 | Compilação 3 envs | `pio run -d firmware` | `maquina01/02/03` compilam sem erro | [ ] |
 | T3.2 | Conexão Wi-Fi + MQTT | Monitor serial (`pio device monitor`) | Conecta ao hotspot e publica a cada 10 s | [ ] |
 | T3.3 | Leitura DHT22 (nas 3 máquinas) | Comparar serial com termômetro/ambiente | Temperatura plausível; `fonte=hibrido` | [ ] |
-| T3.4 | Vibração HW-484 (M02) | Bater levemente na bancada/microfone | Pico visível na série de vibração | [ ] |
+| T3.4 | Vazão hall (M01 e M02) | Soprar na turbina do sensor | `flow` sai de 0 no serial e no painel de vazão | [ ] |
 | T3.5 | Gás MQ (M03) | Isqueiro sem acender (MQ-2) ou álcool (MQ-135), após ~2 min de aquecimento | Pico de gás; status muda | [ ] |
 | T3.6 | Edge/LEDs | Forçar leitura crítica (aquecer DHT22 com o dedo com `TEMP_OFFSET` de demo) | LED RGB muda verde→amarelo→vermelho; HW-481 pisca no crítico | [ ] |
 | T3.7 | Queda de rede | Desligar hotspot por 30 s | ESP32 reconecta sozinho e volta a publicar | [ ] |
@@ -39,6 +39,6 @@ Plano de testes do protótipo. Marcar "ok" ou "falhou" e anotar evidências (pri
 | ID | Teste | Procedimento | Resultado esperado | Status |
 |---|---|---|---|---|
 | T4.1 | Demo fim-a-fim no hotspot | 3 ESP32 + stack no notebook, sem internet externa | Dashboard atualizando ao vivo | [ ] |
-| T4.2 | Anomalia ao vivo | Aquecer DHT22 / bater no HW-484 durante a demo | Alerta aparece em < 15 s no dashboard | [ ] |
+| T4.2 | Anomalia ao vivo | Aquecer DHT22 / aproximar gás do MQ durante a demo | Alerta aparece em < 15 s no dashboard | [ ] |
 | T4.3 | Plano B | Desligar as ESP32 e ligar o simulador | Demo continua sem hardware | [ ] |
 | T4.4 | Tempo | Ensaiar apresentação completa | ≤ 10 min | [ ] |

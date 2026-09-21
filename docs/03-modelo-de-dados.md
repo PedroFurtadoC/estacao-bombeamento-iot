@@ -37,7 +37,7 @@ A ingestão assina o curinga `fabrica/maquinas/+/telemetria`.
 | `rotation` | int (RPM) | Sim | Sinal 4 do enunciado |
 | `humidity` | float (%) | opcional | Extra do DHT22: umidade da casa de bombas (alta = indício de vazamento) |
 | `gas` | float (%) | opcional | Extra do MQ (M03): gases no espaço confinado |
-| `flow` | float (L/min) | opcional | Vazão da motobomba (sensor hall nas M01/M03, simulada na M02) |
+| `flow` | float (L/min) | opcional | Vazão da motobomba (sensor hall nas M01/M02, simulada na M03) |
 | `status` | int | opcional | 0=normal, 1=atenção, 2=crítico (calculado no edge; a ingestão recalcula se ausente) |
 | `fonte` | string | opcional | `sensor`, `simulado` ou `hibrido` |
 | `timestamp` | string ISO 8601 | opcional | Hora local via NTP; se ausente, a ingestão usa a hora de chegada |
@@ -66,7 +66,7 @@ a seco.
 > correta de bomba a seco), o que deixaria a máquina em alerta permanente. Por
 > isso o firmware publica a vazão sempre, mas só a inclui no cálculo de status
 > com o build flag `VAZAO_AFETA_STATUS=1` (ligar quando houver água na
-> demonstração). A vazão simulada (M02) sempre conta no status.
+> demonstração). A vazão simulada (M03) sempre conta no status.
 
 `status` da máquina = pior classificação entre os sinais no instante da leitura.
 

@@ -22,6 +22,7 @@ montar é consolidar, não reescrever.
 | Item | Como gerar |
 |---|---|
 | Diagrama da arquitetura | Renderizar o mermaid de `02-arquitetura.md` (GitHub renderiza; exportar print de alta resolução) |
+| Esquemas elétricos e protoboard | Prontos em `docs/assets/esquema-m01/02/03.svg` (esquema) e `protoboard-m01/02/03.svg` (montagem); SVG entra direto no Word ou exportar PNG do navegador |
 | Base de dados | `python backend/tools/exportar_csv.py` → CSV com ≥ 500 registros |
 | Dashboard | Prints + JSON exportado (`infra/grafana/provisioning/dashboards/mini-central.json`) |
 | Apresentação (PowerPoint, 10 min) | Roteiro sugerido abaixo |

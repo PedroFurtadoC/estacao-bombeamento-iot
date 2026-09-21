@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" class="esq" viewBox="0 0 760 485" role="img" aria-label="Esquema elétrico da M02: ESP32-S3-N16R8 com DHT22 no GPIO 4 e sensor de vazão YF-S402, ambos em 3,3 V; sinal da vazão direto no GPIO 5 com pull-up interno, sem divisor; GND comum."><style>:root{
+--bg:#F1F4F7;--surface:#FFFFFF;--ink:#18212B;--muted:#5C6975;--line:#D6DDE4;--line-2:#E8EDF2;--accent:#0B6E7A;--code-bg:#EEF2F5;
+--t-3v3:#E07414;--t-5v:#C62828;--w-gnd:#2A3138;--w-sig:#C99A06;--w-data:#2E7D32;--w-an:#1D5FBF;--w-led:#8E24AA;
+--board-s2:#8C2A7E;--board-s2-fill:#F3DCEE;--board-wr:#2B323A;--board-wr-fill:#E3E8EE;--res:#F4E7C8;--res-line:#8A6A10;
+}
+.esq .paper{fill:var(--surface)}
+.esq .placa{stroke-width:1.6;opacity:.95}
+.esq .s2{fill:var(--board-s2-fill);stroke:var(--board-s2)}
+.esq .dk{fill:var(--board-wr-fill);stroke:var(--board-wr)}
+.esq .s3{fill:var(--board-wr-fill);stroke:var(--accent)}
+.esq .mod{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
+.esq .etitle{font-size:13px;font-weight:700;font-family:"Archivo",system-ui,sans-serif}
+.esq .esub{font-size:9px;fill:var(--muted);font-family:"Archivo",system-ui,sans-serif}
+.esq .ptitle{font-size:11px;font-weight:700;font-family:"Archivo",system-ui,sans-serif}
+.esq .psub{font-size:8px;fill:var(--muted);font-family:"Archivo",system-ui,sans-serif}
+.esq .mtitle{font-size:10px;font-weight:700;font-family:"Archivo",system-ui,sans-serif}
+.esq .msub{font-size:8px;fill:var(--muted);font-family:"Archivo",system-ui,sans-serif}
+.esq .pinl{font-size:8.5px;font-weight:600}
+.esq .pinl.dim{fill:var(--muted);font-weight:400}
+.esq .fio{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.95}
+.esq .w-3v3{stroke:var(--t-3v3)}.esq .w-5v{stroke:var(--t-5v)}.esq .w-gnd{stroke:var(--w-gnd)}
+.esq .w-sig{stroke:var(--w-sig)}.esq .w-data{stroke:var(--w-data)}.esq .w-an{stroke:var(--w-an)}.esq .w-led{stroke:var(--w-led)}
+.esq .flag{stroke-width:2.4;stroke-linecap:round}
+.esq .flagl{font-size:9px;font-weight:700}
+.esq .t-3v3{fill:var(--t-3v3)}.esq .t-5v{fill:var(--t-5v)}.esq .t-gnd{fill:var(--w-gnd)}
+.esq .gnd{stroke:var(--w-gnd);stroke-width:1.8;stroke-linecap:round}
+.esq .junc{fill:var(--ink)}
+.esq .res{fill:var(--res);stroke:var(--res-line);stroke-width:1.2}
+.esq .rlbl{font-size:8.5px;fill:var(--ink)}
+.esq .wlbl{font-size:8.5px;paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+.esq .nota{font-size:8px;fill:var(--muted);font-family:"Archivo",system-ui,sans-serif}
+.esq .nc{stroke:var(--muted);stroke-width:1.4;stroke-dasharray:2 2}
+.esq .legl{font-size:8.5px;fill:var(--muted);font-family:"Archivo",system-ui,sans-serif}
+.esq text{font-family:"IBM Plex Mono",ui-monospace,monospace;fill:var(--ink)}
+</style>
+<rect class="paper" x="0" y="0" width="760" height="485"/>
+<text class="etitle" x="24" y="26" text-anchor="start">Esquema elétrico · M02</text>
+<text class="esub" x="24" y="40" text-anchor="start">ESP32-S3-N16R8 (formato DevKitC-1) · DHT22 + vazão YF-S402 em 3,3 V · environment maquina02</text>
+<rect class="placa s3" x="70" y="130" width="150" height="240" rx="8"/>
+<text class="ptitle" x="145.0" y="232" text-anchor="middle">ESP32-S3-N16R8</text>
+<text class="ptitle" x="145.0" y="246" text-anchor="middle">DevKitC-1, 44 pinos</text>
+<text class="psub" x="145.0" y="260" text-anchor="middle">gravar pela porta UART/COM</text>
+<line class="fio w-3v3" x1="185" y1="130" x2="185" y2="102"/>
+<line class="flag w-3v3" x1="176" y1="102" x2="194" y2="102"/>
+<text class="flagl t-3v3" x="185" y="95" text-anchor="middle">3V3</text>
+<text class="pinl" x="185" y="143" text-anchor="middle">3V3</text>
+<line class="fio w-data" x1="220" y1="190" x2="250" y2="190"/>
+<text class="pinl" x="214" y="193" text-anchor="end">GPIO 4</text>
+<line class="fio w-sig" x1="220" y1="300" x2="250" y2="300"/>
+<text class="pinl" x="214" y="303" text-anchor="end">GPIO 5</text>
+<line class="fio w-gnd" x1="145" y1="370" x2="145" y2="394"/>
+<line class="gnd" x1="136" y1="394" x2="154" y2="394"/>
+<line class="gnd" x1="139.5" y1="398" x2="150.5" y2="398"/>
+<line class="gnd" x1="143" y1="402" x2="147" y2="402"/>
+<text class="pinl" x="145" y="365" text-anchor="middle">GND</text>
+<rect class="mod" x="500" y="140" width="200" height="70" rx="6"/>
+<text class="mtitle" x="510" y="156" text-anchor="start">DHT22 / AM2302</text>
+<text class="msub" x="510" y="168" text-anchor="start">módulo de 3 pinos, pull-up já na placa</text>
+<line class="fio w-data" x1="500" y1="190" x2="470" y2="190"/>
+<text class="pinl" x="508" y="193" text-anchor="start">DATA</text>
+<line class="fio w-3v3" x1="660" y1="140" x2="660" y2="112"/>
+<line class="flag w-3v3" x1="651" y1="112" x2="669" y2="112"/>
+<text class="flagl t-3v3" x="660" y="105" text-anchor="middle">3V3</text>
+<text class="pinl" x="660" y="153" text-anchor="middle">VCC</text>
+<line class="fio w-gnd" x1="540" y1="210" x2="540" y2="232"/>
+<line class="gnd" x1="531" y1="232" x2="549" y2="232"/>
+<line class="gnd" x1="534.5" y1="236" x2="545.5" y2="236"/>
+<line class="gnd" x1="538" y1="240" x2="542" y2="240"/>
+<text class="pinl" x="540" y="205" text-anchor="middle">GND</text>
+<line class="fio w-data" x1="250" y1="190" x2="470" y2="190"/>
+<text class="wlbl" x="360.0" y="184" text-anchor="middle">1 fio, nível 3,3 V</text>
+<rect class="mod" x="500" y="250" width="200" height="70" rx="6"/>
+<text class="mtitle" x="510" y="266" text-anchor="start">YF-S402 · vazão 1/4″</text>
+<text class="msub" x="510" y="278" text-anchor="start">73 Hz por L/min · fios: vermelho, preto, amarelo</text>
+<line class="fio w-sig" x1="500" y1="300" x2="470" y2="300"/>
+<text class="pinl" x="508" y="303" text-anchor="start">SINAL (amarelo)</text>
+<line class="fio w-3v3" x1="660" y1="250" x2="660" y2="222"/>
+<line class="flag w-3v3" x1="651" y1="222" x2="669" y2="222"/>
+<text class="flagl t-3v3" x="660" y="215" text-anchor="middle">3V3</text>
+<text class="pinl" x="660" y="263" text-anchor="middle">VCC (vermelho)</text>
+<line class="fio w-gnd" x1="540" y1="320" x2="540" y2="342"/>
+<line class="gnd" x1="531" y1="342" x2="549" y2="342"/>
+<line class="gnd" x1="534.5" y1="346" x2="545.5" y2="346"/>
+<line class="gnd" x1="538" y1="350" x2="542" y2="350"/>
+<text class="pinl" x="540" y="315" text-anchor="middle">GND (preto)</text>
+<line class="fio w-sig" x1="250" y1="300" x2="470" y2="300"/>
+<text class="wlbl" x="360.0" y="294" text-anchor="middle">direto, pull-up interno da ESP32</text>
+<text class="nota" x="24" y="440" text-anchor="start">Sem divisor: sensor em 3,3 V, sinal 0–3,3 V, flag VAZAO_PULLUP_INTERNO=1 (validado: 28,6 Hz soprando). DATA no GPIO 4 (abaixo do RST), vazão no GPIO 5. Não usar 35-37, 19/20, 43/44, 0/3/45/46, 48.</text>
+<line class="fio w-3v3" x1="24" y1="465" x2="46" y2="465"/>
+<text class="legl" x="52" y="468" text-anchor="start">3V3</text>
+<line class="fio w-gnd" x1="83.3" y1="465" x2="105.3" y2="465"/>
+<text class="legl" x="111.3" y="468" text-anchor="start">GND (nó comum)</text>
+<line class="fio w-data" x1="198.7" y1="465" x2="220.7" y2="465"/>
+<text class="legl" x="226.7" y="468" text-anchor="start">DATA do DHT22</text>
+<line class="fio w-sig" x1="309.0" y1="465" x2="331.0" y2="465"/>
+<text class="legl" x="337.0" y="468" text-anchor="start">pulsos da vazão</text>
+<circle class="junc" cx="433.5" cy="465" r="3"/>
+<text class="legl" x="441.5" y="468" text-anchor="start">junção</text>
+<rect class="res" x="486.1" y="460" width="20" height="10" rx="0"/>
+<text class="legl" x="512.1" y="468" text-anchor="start">resistor</text>
+</svg>

@@ -71,8 +71,8 @@ detalhes em [`03-modelo-de-dados.md`](03-modelo-de-dados.md).
 A **classificação do status** (normal/atenção/crítico), e este projeto **já
 faz isso**: o ESP32 compara cada leitura com os limiares e aciona o LED RGB
 (HW-479) / alarme (HW-481) localmente, com latência de milissegundos e sem
-depender da rede. Também são candidatos: filtragem/RMS da vibração (já feito no
-M02), downsampling e detecção de outliers antes do envio.
+depender da rede. Também são candidatos: filtragem/RMS da vibração,
+downsampling e detecção de outliers antes do envio.
 
 ## 9. Quais dados deveriam ser protegidos?
 

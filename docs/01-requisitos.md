@@ -60,12 +60,12 @@ no próprio dispositivo (prática explicitamente permitida pelo enunciado).
 | ESP32 | Sensores físicos | Sinais reais | Sinais simulados no firmware |
 |---|---|---|---|
 | M01 | DHT22 + sensor de vazão hall | Temperatura (+ umidade), vazão | Vibração, corrente, rotação |
-| M02 | DHT22 + HW-484 (microfone + LM393) | Temperatura, vibração/cavitação (RMS do sinal analógico) | Corrente, rotação, vazão |
-| M03 | DHT22 + MQ + sensor de vazão hall | Temperatura, gás, vazão | Vibração, corrente, rotação |
+| M02 | DHT22 + sensor de vazão hall | Temperatura (+ umidade), vazão | Vibração, corrente, rotação |
+| M03 | DHT22 + MQ (gás) | Temperatura (+ umidade), gás | Vibração, corrente, rotação, vazão |
 
 Todas as máquinas têm **pelo menos 2 sensores reais**: temperatura em todas
 (1 DHT22 por ESP32, espelhando a sugestão do professor de "um BME280 para cada
-ESP32") e vazão nas M01/M03, superando com folga o mínimo da opção C. A vazão
+ESP32"), vazão nas M01/M02 e gás na M03, superando com folga o mínimo da opção C. A vazão
 é o principal indicador de processo de uma bomba: queda indica
 obstrução/cavitação e zero indica operação a seco. Atuadores de borda: LED RGB
 HW-479 (semáforo de status) e LED flash HW-481 (alarme em condição crítica),

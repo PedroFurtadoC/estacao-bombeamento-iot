@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" class="esq" viewBox="0 0 760 565" role="img" aria-label="Esquema elétrico da M03: ESP32 DevKit com DHT22 no GPIO 4 (3,3 V), sensor de gás MQ em 5 V com saída A0 por divisor 10 kΩ/20 kΩ no GPIO 34 e LED flash HW-481 no GPIO 25; GND comum."><style>:root{
+--bg:#F1F4F7;--surface:#FFFFFF;--ink:#18212B;--muted:#5C6975;--line:#D6DDE4;--line-2:#E8EDF2;--accent:#0B6E7A;--code-bg:#EEF2F5;
+--t-3v3:#E07414;--t-5v:#C62828;--w-gnd:#2A3138;--w-sig:#C99A06;--w-data:#2E7D32;--w-an:#1D5FBF;--w-led:#8E24AA;
+--board-s2:#8C2A7E;--board-s2-fill:#F3DCEE;--board-wr:#2B323A;--board-wr-fill:#E3E8EE;--res:#F4E7C8;--res-line:#8A6A10;
+}
+.esq .paper{fill:var(--surface)}
+.esq .placa{stroke-width:1.6;opacity:.95}
+.esq .s2{fill:var(--board-s2-fill);stroke:var(--board-s2)}
+.esq .dk{fill:var(--board-wr-fill);stroke:var(--board-wr)}
+.esq .s3{fill:var(--board-wr-fill);stroke:var(--accent)}
+.esq .mod{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
+.esq .etitle{font-size:13px;font-weight:700;font-family:"Archivo",system-ui,sans-serif}
+.esq .esub{font-size:9px;fill:var(--muted);font-family:"Archivo",system-ui,sans-serif}
+.esq .ptitle{font-size:11px;font-weight:700;font-family:"Archivo",system-ui,sans-serif}
+.esq .psub{font-size:8px;fill:var(--muted);font-family:"Archivo",system-ui,sans-serif}
+.esq .mtitle{font-size:10px;font-weight:700;font-family:"Archivo",system-ui,sans-serif}
+.esq .msub{font-size:8px;fill:var(--muted);font-family:"Archivo",system-ui,sans-serif}
+.esq .pinl{font-size:8.5px;font-weight:600}
+.esq .pinl.dim{fill:var(--muted);font-weight:400}
+.esq .fio{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.95}
+.esq .w-3v3{stroke:var(--t-3v3)}.esq .w-5v{stroke:var(--t-5v)}.esq .w-gnd{stroke:var(--w-gnd)}
+.esq .w-sig{stroke:var(--w-sig)}.esq .w-data{stroke:var(--w-data)}.esq .w-an{stroke:var(--w-an)}.esq .w-led{stroke:var(--w-led)}
+.esq .flag{stroke-width:2.4;stroke-linecap:round}
+.esq .flagl{font-size:9px;font-weight:700}
+.esq .t-3v3{fill:var(--t-3v3)}.esq .t-5v{fill:var(--t-5v)}.esq .t-gnd{fill:var(--w-gnd)}
+.esq .gnd{stroke:var(--w-gnd);stroke-width:1.8;stroke-linecap:round}
+.esq .junc{fill:var(--ink)}
+.esq .res{fill:var(--res);stroke:var(--res-line);stroke-width:1.2}
+.esq .rlbl{font-size:8.5px;fill:var(--ink)}
+.esq .wlbl{font-size:8.5px;paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+.esq .nota{font-size:8px;fill:var(--muted);font-family:"Archivo",system-ui,sans-serif}
+.esq .nc{stroke:var(--muted);stroke-width:1.4;stroke-dasharray:2 2}
+.esq .legl{font-size:8.5px;fill:var(--muted);font-family:"Archivo",system-ui,sans-serif}
+.esq text{font-family:"IBM Plex Mono",ui-monospace,monospace;fill:var(--ink)}
+</style>
+<rect class="paper" x="0" y="0" width="760" height="565"/>
+<text class="etitle" x="24" y="26" text-anchor="start">Esquema elétrico · M03</text>
+<text class="esub" x="24" y="40" text-anchor="start">ESP32 DevKit V1 (WROOM-32) · DHT22 + MQ (gás) + LED flash HW-481 · environment maquina03</text>
+<rect class="placa dk" x="70" y="130" width="150" height="345" rx="8"/>
+<text class="ptitle" x="145.0" y="352" text-anchor="middle">ESP32 DevKit V1</text>
+<text class="ptitle" x="145.0" y="366" text-anchor="middle">WROOM-32</text>
+<text class="psub" x="145.0" y="380" text-anchor="middle">GPIO 34: só entrada (ADC1)</text>
+<line class="fio w-5v" x1="105" y1="130" x2="105" y2="102"/>
+<line class="flag w-5v" x1="96" y1="102" x2="114" y2="102"/>
+<text class="flagl t-5v" x="105" y="95" text-anchor="middle">5 V (VIN)</text>
+<text class="pinl" x="105" y="143" text-anchor="middle">VIN</text>
+<line class="fio w-3v3" x1="185" y1="130" x2="185" y2="102"/>
+<line class="flag w-3v3" x1="176" y1="102" x2="194" y2="102"/>
+<text class="flagl t-3v3" x="185" y="95" text-anchor="middle">3V3</text>
+<text class="pinl" x="185" y="143" text-anchor="middle">3V3</text>
+<line class="fio w-data" x1="220" y1="190" x2="250" y2="190"/>
+<text class="pinl" x="214" y="193" text-anchor="end">GPIO 4</text>
+<line class="fio w-an" x1="220" y1="300" x2="250" y2="300"/>
+<text class="pinl" x="214" y="303" text-anchor="end">GPIO 34</text>
+<line class="fio w-led" x1="220" y1="432" x2="250" y2="432"/>
+<text class="pinl" x="214" y="435" text-anchor="end">GPIO 25</text>
+<line class="fio w-gnd" x1="145" y1="475" x2="145" y2="499"/>
+<line class="gnd" x1="136" y1="499" x2="154" y2="499"/>
+<line class="gnd" x1="139.5" y1="503" x2="150.5" y2="503"/>
+<line class="gnd" x1="143" y1="507" x2="147" y2="507"/>
+<text class="pinl" x="145" y="470" text-anchor="middle">GND</text>
+<rect class="mod" x="500" y="140" width="200" height="70" rx="6"/>
+<text class="mtitle" x="510" y="156" text-anchor="start">DHT22 / AM2302</text>
+<text class="msub" x="510" y="168" text-anchor="start">módulo de 3 pinos, pull-up já na placa</text>
+<line class="fio w-data" x1="500" y1="190" x2="470" y2="190"/>
+<text class="pinl" x="508" y="193" text-anchor="start">DATA</text>
+<line class="fio w-3v3" x1="660" y1="140" x2="660" y2="112"/>
+<line class="flag w-3v3" x1="651" y1="112" x2="669" y2="112"/>
+<text class="flagl t-3v3" x="660" y="105" text-anchor="middle">3V3</text>
+<text class="pinl" x="660" y="153" text-anchor="middle">VCC</text>
+<line class="fio w-gnd" x1="540" y1="210" x2="540" y2="232"/>
+<line class="gnd" x1="531" y1="232" x2="549" y2="232"/>
+<line class="gnd" x1="534.5" y1="236" x2="545.5" y2="236"/>
+<line class="gnd" x1="538" y1="240" x2="542" y2="240"/>
+<text class="pinl" x="540" y="205" text-anchor="middle">GND</text>
+<line class="fio w-data" x1="250" y1="190" x2="470" y2="190"/>
+<text class="wlbl" x="360.0" y="184" text-anchor="middle">1 fio, nível 3,3 V</text>
+<rect class="mod" x="500" y="250" width="200" height="85" rx="6"/>
+<text class="mtitle" x="510" y="266" text-anchor="start">MQ-2 / MQ-135 · gás</text>
+<text class="msub" x="510" y="278" text-anchor="start">aquecedor em 5 V, ~150 mA · ~2 min para estabilizar</text>
+<line class="fio w-an" x1="500" y1="300" x2="470" y2="300"/>
+<text class="pinl" x="508" y="303" text-anchor="start">A0 (analógico)</text>
+<line class="nc" x1="500" y1="318" x2="486" y2="318"/>
+<text class="pinl dim" x="482" y="321" text-anchor="end">não ligar</text>
+<text class="pinl" x="508" y="321" text-anchor="start">D0</text>
+<line class="fio w-5v" x1="660" y1="250" x2="660" y2="222"/>
+<line class="flag w-5v" x1="651" y1="222" x2="669" y2="222"/>
+<text class="flagl t-5v" x="660" y="215" text-anchor="middle">5 V (VIN)</text>
+<text class="pinl" x="660" y="263" text-anchor="middle">VCC</text>
+<line class="fio w-gnd" x1="540" y1="335" x2="540" y2="357"/>
+<line class="gnd" x1="531" y1="357" x2="549" y2="357"/>
+<line class="gnd" x1="534.5" y1="361" x2="545.5" y2="361"/>
+<line class="gnd" x1="538" y1="365" x2="542" y2="365"/>
+<text class="pinl" x="540" y="330" text-anchor="middle">GND</text>
+<line class="fio w-an" x1="250" y1="300" x2="390" y2="300"/>
+<rect class="res" x="390" y="294" width="40" height="12" rx="0"/>
+<text class="rlbl" x="410" y="290" text-anchor="middle">R1 10 kΩ</text>
+<line class="fio w-an" x1="430" y1="300" x2="470" y2="300"/>
+<line class="fio w-an" x1="340" y1="300" x2="340" y2="318"/>
+<rect class="res" x="334" y="318" width="12" height="40" rx="0"/>
+<text class="rlbl" x="350" y="341" text-anchor="start">R2 20 kΩ</text>
+<line class="fio w-gnd" x1="340" y1="358" x2="340" y2="370"/>
+<line class="gnd" x1="331" y1="370" x2="349" y2="370"/>
+<line class="gnd" x1="334.5" y1="374" x2="345.5" y2="374"/>
+<line class="gnd" x1="338" y1="378" x2="342" y2="378"/>
+<circle class="junc" cx="340" cy="300" r="3"/>
+<text class="wlbl" x="332" y="294" text-anchor="end">≤ 3,3 V</text>
+<text class="nota" x="328" y="334" text-anchor="end">divisor de tensão</text>
+<text class="nota" x="328" y="345" text-anchor="end">até 5 V → 3,3 V</text>
+<rect class="mod" x="500" y="385" width="200" height="80" rx="6"/>
+<text class="mtitle" x="510" y="401" text-anchor="start">HW-481 · LED flash</text>
+<text class="msub" x="510" y="413" text-anchor="start">resistor de 100 Ω na placa · pinos S / NC / −</text>
+<line class="fio w-led" x1="500" y1="432" x2="470" y2="432"/>
+<text class="pinl" x="508" y="435" text-anchor="start">S</text>
+<line class="nc" x1="500" y1="448" x2="486" y2="448"/>
+<text class="pinl dim" x="482" y="451" text-anchor="end">não ligar</text>
+<text class="pinl" x="508" y="451" text-anchor="start">NC</text>
+<line class="fio w-gnd" x1="540" y1="465" x2="540" y2="487"/>
+<line class="gnd" x1="531" y1="487" x2="549" y2="487"/>
+<line class="gnd" x1="534.5" y1="491" x2="545.5" y2="491"/>
+<line class="gnd" x1="538" y1="495" x2="542" y2="495"/>
+<text class="pinl" x="540" y="460" text-anchor="middle">− (GND)</text>
+<line class="fio w-led" x1="250" y1="432" x2="470" y2="432"/>
+<text class="wlbl" x="360.0" y="426" text-anchor="middle">acionado direto pelo GPIO</text>
+<text class="nota" x="24" y="522" text-anchor="start">Alimente a DevKit por uma porta USB boa ou carregador de 5 V / 1 A: o aquecedor do MQ derruba a placa nos picos de Wi-Fi.</text>
+<line class="fio w-3v3" x1="24" y1="545" x2="46" y2="545"/>
+<text class="legl" x="52" y="548" text-anchor="start">3V3</text>
+<line class="fio w-5v" x1="83.3" y1="545" x2="105.3" y2="545"/>
+<text class="legl" x="111.3" y="548" text-anchor="start">5 V (VBUS / VIN)</text>
+<line class="fio w-gnd" x1="208.89999999999998" y1="545" x2="230.89999999999998" y2="545"/>
+<text class="legl" x="236.89999999999998" y="548" text-anchor="start">GND (nó comum)</text>
+<line class="fio w-data" x1="324.29999999999995" y1="545" x2="346.29999999999995" y2="545"/>
+<text class="legl" x="352.29999999999995" y="548" text-anchor="start">DATA do DHT22</text>
+<line class="fio w-an" x1="434.59999999999997" y1="545" x2="456.59999999999997" y2="545"/>
+<text class="legl" x="462.59999999999997" y="548" text-anchor="start">analógico (A0)</text>
+<line class="fio w-led" x1="550.0" y1="545" x2="572.0" y2="545"/>
+<text class="legl" x="578.0" y="548" text-anchor="start">LED</text>
+<circle class="junc" cx="613.3" cy="545" r="3"/>
+<text class="legl" x="621.3" y="548" text-anchor="start">junção</text>
+<rect class="res" x="665.9" y="540" width="20" height="10" rx="0"/>
+<text class="legl" x="691.9" y="548" text-anchor="start">resistor</text>
+</svg>

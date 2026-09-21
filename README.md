@@ -15,8 +15,8 @@ Tudo roda localmente, em contêineres Docker, sem depender de internet.
 flowchart LR
     subgraph Estacao["Estação de bombeamento (3 motobombas)"]
         S1["Motobomba M01<br/>DHT22 + vazão hall"] --> E1["ESP32 M01"]
-        S2["Motobomba M02<br/>DHT22 + HW-484 (vibração)"] --> E2["ESP32 M02"]
-        S3["Motobomba M03<br/>DHT22 + MQ + vazão hall"] --> E3["ESP32 M03"]
+        S2["Motobomba M02<br/>DHT22 + vazão hall"] --> E2["ESP32 M02"]
+        S3["Motobomba M03<br/>DHT22 + MQ (gás)"] --> E3["ESP32 M03"]
         E1 -.-> L1["LED RGB status<br/>(processamento no edge)"]
     end
 
@@ -82,7 +82,7 @@ Payload publicado em `fabrica/maquinas/<ID>/telemetria`:
 }
 ```
 
-Campos extras opcionais: `flow` (vazão em L/min, sensor hall nas M01/M03),
+Campos extras opcionais: `flow` (vazão em L/min, sensor hall nas M01/M02),
 `humidity` (umidade da casa de bombas, indício de vazamento), `gas` (M03),
 `status` (0=normal, 1=atenção, 2=crítico, calculado no edge). Detalhes em
 [`docs/03-modelo-de-dados.md`](docs/03-modelo-de-dados.md).

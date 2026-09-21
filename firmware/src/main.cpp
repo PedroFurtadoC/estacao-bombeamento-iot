@@ -2,32 +2,73 @@
 // Mini Central de Monitoramento IoT - no de aquisicao (ESP32)
 //
 // Le o sensor fisico da maquina (build flag), simula os demais
-// sinais, classifica o status no edge (LEDs) e publica o JSON
-// via MQTT no topico fabrica/maquinas/<ID>/telemetria.
+// sinais, classifica o status no edge (LEDs), mostra a leitura no
+// monitor serial e publica o JSON via MQTT no topico
+// fabrica/maquinas/<ID>/telemetria.
+//
+// Roda em LOLIN S2 Mini (M01, M02) e ESP32 DevKit (M03); o mapa
+// de pinos de cada placa esta em config.h.
+//
+// A rede nunca bloqueia a coleta: sem Wi-Fi ou sem broker os
+// sensores continuam sendo lidos e impressos, e a publicacao
+// acontece assim que o MQTT conecta.
+//
+// -D MODO_BANCADA=1 (environments *_bancada): desliga Wi-Fi/MQTT
+// e imprime a leitura dos sensores a cada 2 s, com os valores
+// brutos, para conferir a montagem antes de ligar a rede.
 // ============================================================
 
 #include <Arduino.h>
-#include <WiFi.h>
-#include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include <time.h>
+#include <math.h>
 
 #include "config.h"
-#include "secrets.h"
 #include "sensores.h"
 #include "simulacao.h"
+
+#ifndef MODO_BANCADA
+#define MODO_BANCADA 0
+#endif
+
+#if !MODO_BANCADA
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <time.h>
+#include "secrets.h"
+#endif
 
 #ifndef MACHINE_ID
 #define MACHINE_ID "M00"
 #endif
 
+#define INTERVALO_BANCADA_MS 2000UL // DHT22 nao le mais rapido que isso
+static const unsigned long INTERVALO_MS = MODO_BANCADA ? INTERVALO_BANCADA_MS : INTERVALO_PUBLICACAO_MS;
+
+#if !MODO_BANCADA
 static const char *TOPICO_TELEMETRIA = "fabrica/maquinas/" MACHINE_ID "/telemetria";
 static const char *TOPICO_STATUS = "fabrica/maquinas/" MACHINE_ID "/status";
-
 WiFiClient rede;
 PubSubClient mqtt(rede);
+#endif
 EstadoSimulacao sim;
-unsigned long ultimaPublicacao = 0;
+unsigned long ultimaLeitura = 0;
+uint32_t contadorLeituras = 0;
+
+// Uma leitura completa da maquina: sinais publicados + valores brutos
+// dos sensores, para conferencia no serial.
+struct Leitura {
+    // sinais do contrato (reais ou simulados)
+    float temperatura = 0, vibracao = 0, corrente = 0, rotacao = 0, vazao = 0;
+    float umidade = NAN, gas = NAN;
+    int status = 0;
+    bool anomaliaSimulada = false;
+    // brutos dos sensores fisicos
+    bool dhtOk = false;
+    float tempBruta = NAN;   // DHT22 sem o TEMP_OFFSET
+    uint16_t gasAdc = 0;     // MQ: media em contagens do ADC (0..4095)
+    uint32_t pulsos = 0;     // vazao: pulsos contados na janela
+    unsigned long janelaMs = 0;
+};
 
 // ---------------- Classificacao de status (edge) ----------------
 // 0 = normal | 1 = atencao | 2 = critico
@@ -71,6 +112,8 @@ int classificarVazao(float v) {
 // ---------------- Atuadores de borda ----------------
 
 void iniciarAtuadores() {
+    pinMode(PINO_LED_ONBOARD, OUTPUT);
+    digitalWrite(PINO_LED_ONBOARD, LOW);
 #if defined(ATUADOR_LED_RGB)
     pinMode(PINO_LED_R, OUTPUT);
     pinMode(PINO_LED_G, OUTPUT);
@@ -94,31 +137,140 @@ void sinalizarStatus(int status) {
 #endif
 }
 
-// ---------------- Conectividade ----------------
+// ---------------- Coleta ----------------
 
-void conectarWifi() {
-    if (WiFi.status() == WL_CONNECTED) return;
-    Serial.printf("[wifi] conectando a %s", WIFI_SSID);
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(WIFI_SSID, WIFI_SENHA);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+// Avanca a simulacao e le os sensores fisicos da maquina.
+void coletar(Leitura &l, unsigned long janelaMs) {
+    l.janelaMs = janelaMs;
+    l.anomaliaSimulada = emJanelaDeAnomalia(millis());
+    avancarSimulacao(sim, l.anomaliaSimulada);
+
+    // Valores partem da simulacao; sensores fisicos sobrescrevem o seu sinal
+    l.temperatura = sim.temperatura;
+    l.vibracao = sim.vibracao;
+    l.corrente = sim.corrente;
+    l.rotacao = sim.rotacao;
+    l.vazao = sim.vazao;
+
+#if defined(SENSOR_DHT22)
+    float t, u;
+    l.dhtOk = lerDHT(t, u);
+    if (l.dhtOk) {
+        l.tempBruta = t;
+        l.temperatura = t + TEMP_OFFSET;
+        l.umidade = u;
     }
-    Serial.printf("\n[wifi] conectado, IP %s\n", WiFi.localIP().toString().c_str());
+#endif
+#if defined(SENSOR_MQ)
+    l.gas = lerGas(&l.gasAdc);
+#endif
+#if defined(SENSOR_VAZAO)
+    l.vazao = lerVazao(janelaMs, &l.pulsos);
+#endif
+
+    int status = classificarTemperatura(l.temperatura);
+    status = max(status, classificarVibracao(l.vibracao));
+    status = max(status, classificarCorrente(l.corrente));
+    status = max(status, classificarRotacao(l.rotacao));
+#if defined(SENSOR_MQ)
+    status = max(status, classificarGas(l.gas));
+#endif
+#if !defined(SENSOR_VAZAO) || VAZAO_AFETA_STATUS
+    // Vazao simulada sempre conta; a real so quando ha agua circulando
+    // (VAZAO_AFETA_STATUS=1), para nao alarmar em bancada seca.
+    status = max(status, classificarVazao(l.vazao));
+#endif
+    l.status = status;
 }
 
-void conectarMqtt() {
-    while (!mqtt.connected()) {
+// Mostra no serial o que cada sensor fisico entregou (bruto e processado)
+// e o que foi simulado. E o que se confere na bancada.
+void imprimirLeitura(const Leitura &l) {
+    static const char *NOME_STATUS[] = {"normal", "atencao", "critico"};
+    Serial.printf("---- leitura #%lu  %s  janela %lu ms ----\n",
+                  (unsigned long)contadorLeituras, MACHINE_ID, l.janelaMs);
+#if defined(SENSOR_DHT22)
+    if (l.dhtOk) {
+        Serial.printf("[DHT22 GPIO%d]  %.1f C ambiente (+%.0f offset = %.1f C)  |  umidade %.1f %%\n",
+                      PINO_DHT, l.tempBruta, (double)TEMP_OFFSET, l.temperatura, l.umidade);
+    } else {
+        Serial.printf("[DHT22 GPIO%d]  FALHA (NaN): conferir VCC=3V3, DATA no GPIO %d e pull-up\n",
+                      PINO_DHT, PINO_DHT);
+    }
+#endif
+#if defined(SENSOR_VAZAO)
+    Serial.printf("[VAZAO GPIO%d]  %lu pulsos em %lu ms = %.1f Hz  ->  %.2f L/min (K=%.1f Hz por L/min)\n",
+                  PINO_VAZAO, (unsigned long)l.pulsos, l.janelaMs,
+                  l.janelaMs ? l.pulsos * 1000.0f / l.janelaMs : 0.0f, l.vazao,
+                  (double)FATOR_VAZAO_HZ_POR_LMIN);
+#endif
+#if defined(SENSOR_MQ)
+    Serial.printf("[MQ GPIO%d]  adc %u/4095 (~%.2f V no pino, ~%.2f V no A0)  ->  gas %.1f %%\n",
+                  PINO_MQ_AO, l.gasAdc, l.gasAdc * 3.3f / 4095.0f,
+                  l.gasAdc * 3.3f / 4095.0f * 1.5f, l.gas);
+#endif
+    Serial.printf("[simulado]  temp %.1f C%s  vib %.2f mm/s%s  corrente %.1f A  rotacao %.0f RPM  vazao %.1f L/min%s%s\n",
+                  l.temperatura,
+#if defined(SENSOR_DHT22)
+                  l.dhtOk ? " (real)" : "",
+#else
+                  "",
+#endif
+                  l.vibracao, "",
+                  l.corrente, l.rotacao, l.vazao,
+#if defined(SENSOR_VAZAO)
+                  " (real)",
+#else
+                  "",
+#endif
+                  l.anomaliaSimulada ? "  [janela de ANOMALIA simulada]" : "");
+    Serial.printf("[status]  %d (%s)\n", l.status, NOME_STATUS[l.status]);
+}
+
+// ---------------- Conectividade (nao bloqueante) ----------------
+#if !MODO_BANCADA
+
+// Mantem Wi-Fi e MQTT no ar sem travar o loop: cada chamada tenta no
+// maximo um passo (iniciar Wi-Fi, ou uma conexao MQTT) e volta.
+void manterRede() {
+    static bool wifiIniciado = false;
+    static bool wifiEstavaConectado = false;
+    static unsigned long ultimaTentativaWifi = 0;
+    static unsigned long ultimaTentativaMqtt = 0;
+    unsigned long agora = millis();
+
+    if (WiFi.status() != WL_CONNECTED) {
+        if (wifiEstavaConectado) {
+            Serial.println("[wifi] conexao perdida, reconectando");
+            wifiEstavaConectado = false;
+        }
+        if (!wifiIniciado || agora - ultimaTentativaWifi >= 15000UL) {
+            Serial.printf("[wifi] conectando a %s ...\n", WIFI_SSID);
+            WiFi.mode(WIFI_STA);
+            WiFi.setAutoReconnect(true);
+            WiFi.begin(WIFI_SSID, WIFI_SENHA);
+            wifiIniciado = true;
+            ultimaTentativaWifi = agora;
+        }
+        return;
+    }
+
+    if (!wifiEstavaConectado) {
+        wifiEstavaConectado = true;
+        Serial.printf("[wifi] conectado, IP %s\n", WiFi.localIP().toString().c_str());
+        configTime(FUSO_SEGUNDOS, 0, SERVIDOR_NTP_1, SERVIDOR_NTP_2);
+    }
+
+    if (!mqtt.connected() && agora - ultimaTentativaMqtt >= 5000UL) {
+        ultimaTentativaMqtt = agora;
         String clienteId = String("esp32-") + MACHINE_ID;
-        Serial.printf("[mqtt] conectando a %s:%d... ", MQTT_HOST, MQTT_PORTA);
+        Serial.printf("[mqtt] conectando a %s:%d ... ", MQTT_HOST, MQTT_PORTA);
         // LWT: se o dispositivo cair, o broker publica "offline" (retido)
         if (mqtt.connect(clienteId.c_str(), TOPICO_STATUS, 1, true, "offline")) {
             Serial.println("ok");
             mqtt.publish(TOPICO_STATUS, "online", true);
         } else {
-            Serial.printf("falhou (rc=%d), nova tentativa em 3 s\n", mqtt.state());
-            delay(3000);
+            Serial.printf("falhou (rc=%d), nova tentativa em 5 s\n", mqtt.state());
         }
     }
 }
@@ -132,98 +284,82 @@ bool timestampIso(char *saida, size_t tamanho) {
     return true;
 }
 
-// ---------------- Ciclo principal ----------------
-
-void publicarTelemetria() {
-    bool anomalia = emJanelaDeAnomalia(millis());
-    avancarSimulacao(sim, anomalia);
-
-    // Valores partem da simulacao; sensores fisicos sobrescrevem o seu sinal
-    float temperatura = sim.temperatura;
-    float vibracao = sim.vibracao;
-    float corrente = sim.corrente;
-    float rotacao = sim.rotacao;
-    float vazao = sim.vazao;
-
+void publicar(const Leitura &l) {
     JsonDocument doc;
     doc["machine"] = MACHINE_ID;
-
-#if defined(SENSOR_DHT22)
-    float tReal, uReal;
-    if (lerTemperatura(tReal)) temperatura = tReal;
-    if (lerUmidade(uReal)) doc["humidity"] = round(uReal * 10) / 10.0;
-#endif
-#if defined(SENSOR_SOM)
-    vibracao = lerVibracao();
-#endif
-#if defined(SENSOR_MQ)
-    float gas = lerGas();
-    doc["gas"] = round(gas * 10) / 10.0;
-#endif
-#if defined(SENSOR_VAZAO)
-    vazao = lerVazao(INTERVALO_PUBLICACAO_MS);
-#endif
-
-    int status = classificarTemperatura(temperatura);
-    status = max(status, classificarVibracao(vibracao));
-    status = max(status, classificarCorrente(corrente));
-    status = max(status, classificarRotacao(rotacao));
-#if defined(SENSOR_MQ)
-    status = max(status, classificarGas(gas));
-#endif
-#if !defined(SENSOR_VAZAO) || VAZAO_AFETA_STATUS
-    // Vazao simulada sempre conta; a real so quando ha agua circulando
-    // (VAZAO_AFETA_STATUS=1), para nao alarmar em bancada seca.
-    status = max(status, classificarVazao(vazao));
-#endif
-
-    sinalizarStatus(status);
-
-    doc["temperature"] = round(temperatura * 10) / 10.0;
-    doc["vibration"] = round(vibracao * 10) / 10.0;
-    doc["current"] = round(corrente * 10) / 10.0;
-    doc["rotation"] = (int)rotacao;
-    doc["flow"] = round(vazao * 10) / 10.0;
-    doc["status"] = status;
-#if defined(SENSOR_DHT22) || defined(SENSOR_SOM) || defined(SENSOR_MQ)
+    doc["temperature"] = round(l.temperatura * 10) / 10.0;
+    doc["vibration"] = round(l.vibracao * 10) / 10.0;
+    doc["current"] = round(l.corrente * 10) / 10.0;
+    doc["rotation"] = (int)l.rotacao;
+    doc["flow"] = round(l.vazao * 10) / 10.0;
+    if (!isnan(l.umidade)) doc["humidity"] = round(l.umidade * 10) / 10.0;
+    if (!isnan(l.gas)) doc["gas"] = round(l.gas * 10) / 10.0;
+    doc["status"] = l.status;
+#if defined(SENSOR_DHT22) || defined(SENSOR_MQ)
     doc["fonte"] = "hibrido";
 #else
     doc["fonte"] = "simulado";
 #endif
-
     char ts[24];
     if (timestampIso(ts, sizeof(ts))) doc["timestamp"] = ts;
 
     char payload[384];
     size_t n = serializeJson(doc, payload, sizeof(payload));
+
+    if (!mqtt.connected()) {
+        Serial.printf("[pub] sem MQTT, nao enviado: %s\n", payload);
+        return;
+    }
     bool ok = mqtt.publish(TOPICO_TELEMETRIA, payload, n);
     Serial.printf("[pub]%s %s\n", ok ? "" : " FALHA", payload);
 }
+#endif // !MODO_BANCADA
+
+// ---------------- Ciclo principal ----------------
 
 void setup() {
     Serial.begin(115200);
+    // No S2 Mini a serial e a USB nativa (CDC): espera ate 3 s o PC abrir a
+    // porta para nao perder as primeiras linhas. Na DevKit passa direto.
+    unsigned long inicio = millis();
+    while (!Serial && millis() - inicio < 3000) delay(10);
+    Serial.printf("\n[boot] no %s%s\n", MACHINE_ID, MODO_BANCADA ? " - MODO BANCADA (sem rede)" : "");
+    Serial.printf("[boot] pinos: DHT=%d vazao=%d MQ=%d | intervalo %lu ms\n",
+                  PINO_DHT, PINO_VAZAO, PINO_MQ_AO, INTERVALO_MS);
     randomSeed(esp_random());
 
     iniciarSensores();
     iniciarAtuadores();
     sinalizarStatus(0);
 
-    conectarWifi();
-    configTime(FUSO_SEGUNDOS, 0, SERVIDOR_NTP_1, SERVIDOR_NTP_2);
-
+#if !MODO_BANCADA
     mqtt.setServer(MQTT_HOST, MQTT_PORTA);
     mqtt.setBufferSize(512);
-    conectarMqtt();
+    manterRede();
+#endif
+    ultimaLeitura = millis();
 }
 
 void loop() {
-    conectarWifi();
-    conectarMqtt();
+#if !MODO_BANCADA
+    manterRede();
     mqtt.loop();
+#endif
 
     unsigned long agora = millis();
-    if (agora - ultimaPublicacao >= INTERVALO_PUBLICACAO_MS || ultimaPublicacao == 0) {
-        ultimaPublicacao = agora;
-        publicarTelemetria();
-    }
+    if (agora - ultimaLeitura < INTERVALO_MS) return;
+    unsigned long janela = agora - ultimaLeitura;
+    ultimaLeitura = agora;
+    contadorLeituras++;
+
+    Leitura l;
+    coletar(l, janela);
+    sinalizarStatus(l.status);
+
+    digitalWrite(PINO_LED_ONBOARD, HIGH); // piscada curta = leitura feita
+    imprimirLeitura(l);
+#if !MODO_BANCADA
+    publicar(l);
+#endif
+    digitalWrite(PINO_LED_ONBOARD, LOW);
 }

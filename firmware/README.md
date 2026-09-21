@@ -1,8 +1,28 @@
 # Firmware das ESP32
 
 Projeto PlatformIO único: o mesmo código atende as 3 máquinas. A identidade
-(`MACHINE_ID`) e os sensores/atuadores de cada uma são definidos por build
-flags em `platformio.ini`.
+(`MACHINE_ID`), a placa e os sensores/atuadores de cada uma são definidos por
+environment em `platformio.ini`; o mapa de pinos de cada placa fica em
+`src/config.h` e é escolhido automaticamente pelo alvo compilado.
+
+## Placas desta montagem
+
+| Máquina | Environment | Placa (`board`) | Sensores | Atuador |
+|---|---|---|---|---|
+| M01 | `maquina01` | LOLIN S2 Mini (`lolin_s2_mini`) | DHT22 + vazão YF-S201C | LED RGB HW-479 |
+| M02 | `maquina02` | ESP32-S3-N16R8, formato DevKitC-1 (`esp32-s3-devkitc-1`) | DHT22 + vazão YF-S402 | nenhum |
+| M03 | `maquina03` | ESP32 DevKit V1 (`esp32dev`) | DHT22 + MQ (gás) | LED flash HW-481 |
+
+Para trocar a placa de uma máquina troque só o `extends`/`board` do
+environment (`s2mini`, `s3n16r8` ou `board = esp32dev`); os pinos seguem a
+tabela da placa, escolhida em `config.h` pelo alvo compilado.
+
+**S2 Mini: só a fileira externa tem header.** Tudo abaixo usa apenas esses pinos:
+
+```
+esquerda : EN   3   5   7   9   11   12   3V3
+direita  : 39   37  35  33  18  16   GND  VBUS (5 V do USB)
+```
 
 ## Preparação
 
@@ -13,44 +33,83 @@ pio run -e maquina01 -t upload                   # grava (repetir p/ maquina02/0
 pio device monitor                               # monitor serial 115200
 ```
 
+> **S2 Mini, primeira gravação:** a placa só aparece como porta COM em modo
+> de gravação (ROM). Com o USB desligado, segure o botão **0**, ligue o USB e
+> solte o **0** (ou, já ligado: segure **0**, toque **RST**, solte **0**).
+> `pio device list` deve mostrar uma porta com `VID:PID=303A:0002`. Mande o
+> upload; a placa reinicia sozinha e volta com a serial USB do firmware
+> (`303A:80C2`). A partir daí o upload é automático, sem botão, e o
+> "Upload and Monitor" do VS Code funciona direto. A DevKit grava direto.
+>
+> **S3-N16R8:** grave e monitore pela porta USB-C marcada **`UART`** (ou
+> `COM`), que tem o chip USB-serial CH343 (`VID:PID=1A86:55D3`): auto-reset,
+> sem botão. A porta `USB` vai direto ao chip e não mostra a serial com a
+> configuração atual. Flash de 16 MB já configurada; a PSRAM fica desligada
+> (o firmware não precisa).
+>
+> Por trás: ao terminar de gravar, o esptool reinicia o S2 e a porta some
+> antes de ele fechá-la, o que gerava um `FAILED` falso mesmo com
+> `Hash of data verified`. O `tools/pio_s2.py` (ativado por `extra_scripts`
+> nos environments S2) troca o esptool pelo `tools/esptool_s2.py`, que
+> reconhece esse caso, espera a placa reaparecer e devolve sucesso; qualquer
+> erro antes da gravação continua sendo erro.
+
 ## Ligações (wiring)
 
 > Esquema completo, com diagrama de cada placa, cálculo dos divisores e como
 > adaptar os fios do sensor de vazão para a protoboard:
 > [`../docs/10-esquema-eletrico.md`](../docs/10-esquema-eletrico.md).
+> Montagem furo a furo na protoboard, uma figura por máquina:
+> [`../docs/assets/protoboard.html`](../docs/assets/protoboard.html).
 
-### Máquina 01: DHT22 + vazão (hall) + LED RGB (HW-479)
+### Máquina 01 (S2 Mini): DHT22 + vazão YF-S201C + LED RGB (HW-479)
 
-| Módulo | Pino módulo | ESP32 |
+| Módulo | Pino módulo | S2 Mini |
+|---|---|---|
+| DHT22/AM2302 | VCC / DATA / GND | 3V3 / **GPIO 7** / GND |
+| Vazão YF-S201C (1/2") | VCC / GND / SINAL | **VBUS (5 V)** / GND / **GPIO 5** (via divisor, ver abaixo) |
+| HW-479 (RGB) | R / G / B / - | **GPIO 9 / GPIO 11 / GPIO 12** / GND |
+
+### Máquina 02 (ESP32-S3-N16R8): DHT22 + vazão YF-S402
+
+| Módulo | Pino módulo | S3 (DevKitC-1) |
+|---|---|---|
+| DHT22/AM2302 | VCC / DATA / GND | 3V3 / **GPIO 4** / GND |
+| Vazão YF-S402 (1/4") | VCC / GND / SINAL | **3V3** / GND / **GPIO 5** direto, sem divisor (`VAZAO_PULLUP_INTERNO=1`, já no environment) |
+
+No S3 não use os GPIO 35/36/37 (PSRAM octal do R8), 19/20 (USB), 43/44
+(serial do monitor), 0/3/45/46 (boot) nem 48 (LED RGB da placa). Todos os
+pinos vêm escritos na serigrafia.
+
+Mesma ligação da M01, sem o LED. Só muda o sensor (e o fator de conversão, já no `platformio.ini`).
+
+### Máquina 03 (DevKit): DHT22 + MQ (gás) + LED flash (HW-481)
+
+| Módulo | Pino módulo | ESP32 DevKit |
 |---|---|---|
 | DHT22/AM2302 | VCC / DATA / GND | 3V3 / GPIO 4 / GND |
-| Vazão hall (YF-S201 ou similar) | VCC / GND / SINAL | **5V (VIN)** / GND / GPIO 33 (via divisor, ver abaixo) |
-| HW-479 (RGB) | R / G / B / - | GPIO 25 / GPIO 26 / GPIO 27 / GND |
-
-### Máquina 02: DHT22 + HW-484 (som/vibração)
-
-| Módulo | Pino módulo | ESP32 |
-|---|---|---|
-| DHT22/AM2302 | VCC / DATA / GND | 3V3 / GPIO 4 / GND |
-| HW-484 | + / G / A0 | 3V3 / GND / GPIO 34 |
-
-> Usar a saída **A0** (analógica). GPIO 34 é somente-entrada (ADC1), ideal para isso.
-
-### Máquina 03: DHT22 + MQ + vazão (hall) + LED flash (HW-481)
-
-| Módulo | Pino módulo | ESP32 |
-|---|---|---|
-| DHT22/AM2302 | VCC / DATA / GND | 3V3 / GPIO 4 / GND |
-| MQ (Flying-Fish) | VCC / GND / A0 | **5V (VIN)** / GND / GPIO 34 (via divisor) |
-| Vazão hall (YF-S201 ou similar) | VCC / GND / SINAL | **5V (VIN)** / GND / GPIO 33 (via divisor) |
+| MQ (Flying-Fish) | VCC / GND / A0 | **VIN (5 V)** / GND / GPIO 34 (via divisor) |
 | HW-481 (flash) | S / - | GPIO 25 / GND |
+
+> GPIO 34 é somente-entrada (ADC1), ideal para o analógico. A vibração da M03 é simulada, como nas outras máquinas.
 
 > O sensor MQ (MQ-2 ou MQ-135, conferir o código no cilindro metálico) tem
 > aquecedor interno: alimente em 5 V e aguarde cerca de 2 min antes de confiar
 > na leitura. Na demonstração, gás de isqueiro sem acender (MQ-2) ou álcool
 > (MQ-135) faz a leitura subir rapidamente.
 
-### Divisores de tensão (obrigatórios nos dois sensores de 5 V)
+### Se alguma máquina for montada na outra placa
+
+| Sinal | S2 Mini | ESP32-S3-N16R8 | ESP32 DevKit |
+|---|---|---|---|
+| DHT22 DATA | GPIO 7 | GPIO 4 | GPIO 4 |
+| Vazão (pulsos) | GPIO 5 | GPIO 5 | GPIO 33 |
+| MQ A0 | GPIO 3 | GPIO 6 | GPIO 34 |
+| LED RGB R / G / B | GPIO 9 / 11 / 12 | GPIO 15 / 16 / 17 | GPIO 25 / 26 / 27 |
+| LED flash | GPIO 9 | GPIO 15 | GPIO 25 |
+| 5 V para MQ e vazão | VBUS | 5V | VIN |
+
+### Divisores de tensão (obrigatórios em todo sensor alimentado em 5 V)
 
 O ESP32 aceita no máximo 3,3 V nos GPIOs. Tanto a saída A0 do MQ quanto o
 sinal do sensor de vazão são referenciados aos 5 V da alimentação e podem
@@ -77,11 +136,18 @@ sensor e do divisor precisa ser o mesmo.
 > para saber se o seu modelo já tem pull-up interno para 5 V (aí vale o divisor)
 > ou não (aí vale um pull-up de 10 kΩ para o 3V3, sem divisor). O procedimento
 > está em [`../docs/10-esquema-eletrico.md`](../docs/10-esquema-eletrico.md).
+> Alternativa sem divisor (padrão da M02): alimentar o sensor em **3V3** e
+> compilar com `-D VAZAO_PULLUP_INTERNO=1` (o ESP32 fornece o pull-up). O
+> YF-S402 é especificado a partir de 3,5 V e o YF-S201C a partir de 4,5 V; o
+> YF-S402 pulsou em 3,3 V na bancada (28,6 Hz soprando). Para a M01, teste
+> soprando antes de adotar.
 
 > **Vazão em bancada seca**: sem água a leitura fica em 0 L/min (comportamento
 > correto de bomba a seco); soprar na turbina gera vazão para a demonstração.
-> Conversão padrão YF-S201 (7,5 Hz por L/min), ajustável em
-> `FATOR_VAZAO_HZ_POR_LMIN`.
+> Conversão por modelo, definida no `platformio.ini`
+> (`FATOR_VAZAO_HZ_POR_LMIN`): YF-S201C = 7,5 Hz por L/min (M01);
+> YF-S402 = 73 Hz por L/min (M02). Valores nominais (±10 %); para calibrar,
+> compare o volume acumulado com um recipiente graduado.
 
 ## Comportamento
 
@@ -89,7 +155,8 @@ sensor e do divisor precisa ser o mesmo.
 - Sinais sem sensor físico são simulados (variação normal + anomalia periódica
   a cada 15 min, Desafio 2);
 - Status calculado no edge (0/1/2) aciona LED RGB (M01) e alarme (M03);
-- Vazão real (M01/M03) é publicada sempre, mas só entra no status com
+- O LED azul da própria placa dá uma piscada a cada publicação ("placa viva");
+- Vazão real (M01/M02) é publicada sempre, mas só entra no status com
   `-D VAZAO_AFETA_STATUS=1` (evita alarme permanente em bancada seca);
 - LWT: queda do dispositivo publica `offline` retido no tópico `status`;
 - Timestamp via NTP (UTC-3); sem sincronismo, o back-end usa a hora de chegada;

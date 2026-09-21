@@ -5,19 +5,26 @@ notebook: nenhum serviço na nuvem, nenhuma dependência de internet.
 
 ## O que cada máquina leva
 
-| Máquina | Sensores | GPIOs | Atuador |
-|---|---|---|---|
-| M01 | DHT22 + vazão hall | 4 (DHT), 33 (vazão) | LED RGB HW-479 (25, 26, 27) |
-| M02 | DHT22 + HW-484 | 4 (DHT), 34 (som) | nenhum |
-| M03 | DHT22 + MQ + vazão hall | 4 (DHT), 34 (MQ), 33 (vazão) | LED flash HW-481 (25) |
+| Máquina | Placa | Sensores | GPIOs | Atuador |
+|---|---|---|---|---|
+| M01 | S2 Mini | DHT22 + vazão YF-S201C | 7 (DHT), 5 (vazão) | LED RGB HW-479 (9, 11, 12) |
+| M02 | ESP32-S3-N16R8 | DHT22 + vazão YF-S402 | 4 (DHT), 5 (vazão) | nenhum |
+| M03 | DevKit | DHT22 + MQ (gás) | 4 (DHT), 34 (MQ) | LED flash HW-481 (25) |
+
+No S2 Mini só a fileira externa de pinos tem header (**solde a barra de
+pinos**: jumper espetado no furo não faz contato); o 5 V é o pino `VBUS`. Na
+primeira gravação do S2 Mini, segure `0`, toque `RST`, solte `0`, faça o upload
+e aperte `RST` ao terminar. O S3 grava pela porta `UART` sem botão; a DevKit
+da M03 precisa do `BOOT` segurado durante o `Connecting...`.
 
 Esquema elétrico completo, pino a pino, e a **lista do que levar para a
 bancada**: [`10-esquema-eletrico.md`](10-esquema-eletrico.md).
 
-Regra rápida: **DHT22 e HW-484 em 3,3 V**, ligação direta no GPIO. **MQ e
-vazão em 5 V**, com divisor de 10 kΩ e 20 kΩ antes do GPIO. O sensor de vazão
-ainda precisa de pull-up, e o esquema explica como descobrir se o seu modelo já
-tem um interno.
+Regra rápida: **DHT22 em 3,3 V**, ligação direta no GPIO. **MQ (M03) e
+vazão da M01 em 5 V**, com divisor de 10 kΩ e 20 kΩ antes do GPIO; a **vazão
+da M02 fica em 3,3 V, direto no GPIO 5**, sem divisor (pull-up interno, já no
+firmware). O sensor de vazão em 5 V ainda precisa de pull-up, e o esquema
+explica como descobrir se o seu modelo já tem um interno.
 
 ## Preparação (uma vez)
 
@@ -94,9 +101,8 @@ No monitor serial você deve ver o Wi-Fi conectar, o MQTT conectar e uma linha
 3. **Provocar a anomalia ao vivo**: segurar o sensor DHT22 entre os dedos. Em
    poucos segundos a temperatura passa de 80 °C, o LED vira vermelho e os
    painéis de alerta reagem;
-4. Outras provocações possíveis: bater na bancada perto do HW-484 (vibração),
-   aproximar gás de isqueiro sem acender ou álcool do MQ (gás), soprar na
-   turbina do sensor de vazão;
+4. Outras provocações possíveis: aproximar gás de isqueiro sem acender ou
+   álcool do MQ (gás, M03), soprar na turbina do sensor de vazão (M01 e M02);
 5. Mostrar o histórico e a análise (Desafio 4).
 
 ## Se algo der errado
