@@ -158,5 +158,7 @@ sensor e do divisor precisa ser o mesmo.
   `-D VAZAO_AFETA_STATUS=1` (evita alarme permanente em bancada seca);
 - LWT: queda do dispositivo publica `offline` retido no tópico `status`;
 - Timestamp via NTP (UTC-3); sem sincronismo, o back-end usa a hora de chegada;
-- `TEMP_OFFSET` (padrão +45 °C) leva a leitura ambiente do DHT22 à faixa do
-  cenário; aquecer o sensor com o dedo dispara o alerta ao vivo.
+- `TEMP_OFFSET` (padrão +40 °C) leva a leitura ambiente do DHT22 à faixa do
+  cenário; aquecer o sensor com o dedo dispara o alerta ao vivo. Se a sala
+  estiver muito quente ou muito fria no dia, ajuste com `-D TEMP_OFFSET=xx.0f`:
+  a conta é `ambiente + offset` caindo entre 65 e 75 °C.

@@ -3,11 +3,8 @@
 #include <Arduino.h>
 #include "config.h"
 
-// ============================================================
-// Simulacao dos sinais sem sensor fisico (Desafio 2):
-// variacao normal + pequenas oscilacoes (random walk limitado)
-// e janela periodica de anomalia levando os sinais a faixa critica.
-// ============================================================
+// Sinais sem sensor fisico (Desafio 2): passeio aleatorio limitado, com
+// janela periodica de anomalia levando tudo para a faixa critica.
 
 struct EstadoSimulacao {
     float temperatura = 70.0f; // C     (normal 65-75)
@@ -17,7 +14,6 @@ struct EstadoSimulacao {
     float vazao = 30.0f;       // L/min (normal 20-40)
 };
 
-// Passo aleatorio pequeno, limitado a [minimo, maximo]
 inline float passeioAleatorio(float atual, float passo, float minimo, float maximo) {
     float delta = (random(-1000, 1001) / 1000.0f) * passo;
     float novo = atual + delta;
@@ -26,16 +22,14 @@ inline float passeioAleatorio(float atual, float passo, float minimo, float maxi
     return novo;
 }
 
-// Janela de anomalia periodica (relogio do dispositivo)
 inline bool emJanelaDeAnomalia(unsigned long agoraMs) {
     unsigned long fase = agoraMs % SIM_ANOMALIA_PERIODO_MS;
-    // A janela abre no fim de cada periodo para dar tempo de acumular dados normais
+    // abre no fim do periodo, depois de acumular dados normais
     return fase >= (SIM_ANOMALIA_PERIODO_MS - SIM_ANOMALIA_DURACAO_MS);
 }
 
-// Avanca um passo da simulacao. Durante a anomalia, temperatura e corrente
-// sobem juntas (correlacao fisica: mais carga -> mais corrente -> mais calor)
-// e a vibracao acompanha.
+// Na anomalia, temperatura e corrente sobem juntas (mais carga, mais corrente,
+// mais calor), a vibracao acompanha e a rotacao cai.
 inline void avancarSimulacao(EstadoSimulacao &s, bool anomalia) {
     if (anomalia) {
         s.temperatura = passeioAleatorio(s.temperatura + 1.5f, 0.8f, 78.0f, 86.0f);

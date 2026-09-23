@@ -1,8 +1,4 @@
-"""Serviço de ingestão: assina a telemetria MQTT, valida e grava no InfluxDB.
-
-Camada de back-end da arquitetura (docs/02-arquitetura.md):
-MQTT (Mosquitto) -> validação/enriquecimento -> InfluxDB (bucket iot).
-"""
+"""Assina a telemetria MQTT, valida e grava no InfluxDB (bucket iot)."""
 
 from __future__ import annotations
 
@@ -34,30 +30,55 @@ CAMPOS_OBRIGATORIOS = ("temperature", "vibration", "current", "rotation")
 CAMPOS_OPCIONAIS = ("humidity", "gas", "flow")
 
 
+# Mesmas faixas de firmware/src/config.h. Repetidas de propósito, porque o
+# back-end precisa classificar sozinho quando o payload vem sem status.
+# Mexeu em um, mexa no outro.
+LIMIARES = {
+    #            atenção  crítico
+    "temperature": (75.0, 80.0),
+    "vibration": (3.5, 5.0),
+    "current": (9.0, 11.0),
+    "gas": (45.0, 60.0),
+}
+ROTACAO_ATENCAO = (3400.0, 3600.0)
+ROTACAO_CRITICO = (3300.0, 3700.0)
+VAZAO_ATENCAO = (20.0, 40.0)
+VAZAO_CRITICO = (10.0, 45.0)
+
+
 def calcular_status(dados: dict) -> int:
-    """Espelha a classificação do firmware: 0 normal, 1 atenção, 2 crítico."""
-    t, v = dados["temperature"], dados["vibration"]
-    c, r = dados["current"], dados["rotation"]
-    q = dados.get("flow", 30)
-    status = 0
-    if t > 80 or v > 5 or c > 11 or r < 3300 or r > 3700 or q < 10 or q > 45 or dados.get("gas", 0) > 40:
-        status = 2
-    elif (
-        t > 75
-        or v > 3.5
-        or c > 9
-        or r < 3400
-        or r > 3600
-        or q < 20
-        or q > 40
-        or dados.get("gas", 0) > 20
+    """0 normal, 1 atenção, 2 crítico. Só roda quando o payload vem sem status.
+
+    Vazão 0 é ignorada: é o que o sensor lê em bancada seca, sem água
+    circulando, e não indica falha da bomba.
+    """
+    def passou(campo: str, faixa: int) -> bool:
+        valor = dados.get(campo)
+        return isinstance(valor, (int, float)) and valor > LIMIARES[campo][faixa]
+
+    def fora(valor: float, faixa: tuple[float, float]) -> bool:
+        return not faixa[0] <= valor <= faixa[1]
+
+    rotacao = dados["rotation"]
+    vazao = dados.get("flow") or 0.0
+
+    if (
+        any(passou(campo, 1) for campo in LIMIARES)
+        or fora(rotacao, ROTACAO_CRITICO)
+        or (vazao > 0 and fora(vazao, VAZAO_CRITICO))
     ):
-        status = 1
-    return status
+        return 2
+    if (
+        any(passou(campo, 0) for campo in LIMIARES)
+        or fora(rotacao, ROTACAO_ATENCAO)
+        or (vazao > 0 and fora(vazao, VAZAO_ATENCAO))
+    ):
+        return 1
+    return 0
 
 
 def interpretar_timestamp(bruto: str | None) -> datetime:
-    """Timestamp do payload (hora local UTC-3, via NTP) ou hora de chegada."""
+    """Hora local do payload (UTC-3, via NTP); na falta dela, a de chegada."""
     if bruto:
         try:
             ts = datetime.fromisoformat(bruto)
@@ -70,7 +91,7 @@ def interpretar_timestamp(bruto: str | None) -> datetime:
 
 
 def validar(payload: bytes) -> dict | None:
-    """Retorna o dicionário validado ou None (payload descartado)."""
+    """Dicionário validado, ou None se o payload for descartado."""
     try:
         dados = json.loads(payload)
     except (json.JSONDecodeError, UnicodeDecodeError):
@@ -116,8 +137,7 @@ def criar_callback_mensagem(write_api):
         for campo in CAMPOS_OBRIGATORIOS + CAMPOS_OPCIONAIS:
             if isinstance(dados.get(campo), (int, float)) and not isinstance(dados.get(campo), bool):
                 ponto = ponto.field(campo, float(dados[campo]))
-        # Escrita em lote (assíncrona): o ponto entra no buffer e é enviado
-        # com os demais; erros de gravação aparecem em erro_ao_gravar.
+        # entra no buffer do lote; erro de gravação cai em erro_ao_gravar
         write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=ponto)
         log.info("gravado: %s status=%s", dados["machine"], status)
 
@@ -130,9 +150,9 @@ def erro_ao_gravar(_conf, _dados, excecao: Exception) -> None:
 
 def principal() -> None:
     influx = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
-    # Lotes de até 200 pontos ou a cada 1 s: em operação normal (18 msg/min)
-    # cada leitura sai em ~1 s; no backfill do simulador (2000+ mensagens em
-    # rajada) a gravação acompanha o broker em vez de estourar a fila dele.
+    # Lote de 200 pontos ou 1 s. Em operação normal cada leitura sai em ~1 s;
+    # no backfill (2000+ mensagens em rajada) a gravação acompanha o broker em
+    # vez de estourar a fila dele.
     write_api = influx.write_api(
         write_options=WriteOptions(batch_size=200, flush_interval=1_000, retry_interval=2_000, max_retries=3),
         error_callback=erro_ao_gravar,
@@ -147,7 +167,7 @@ def principal() -> None:
     try:
         cliente.loop_forever(retry_first_connection=True)
     finally:
-        write_api.close()  # descarrega o lote pendente ao encerrar
+        write_api.close()  # descarrega o lote pendente
         influx.close()
 
 

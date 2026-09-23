@@ -1,7 +1,5 @@
-# Mini Central de Monitoramento IoT - stack local
-# Subir:  docker compose --project-directory infra up -d
-# Parar:  docker compose --project-directory infra down
-# Requer: infra/.env (copiar de infra/.env.example)
+# Stack local. Precisa de infra/.env (copiar de infra/.env.example).
+# Subir: docker compose --project-directory infra up -d
 
 name: mini-central-iot
 

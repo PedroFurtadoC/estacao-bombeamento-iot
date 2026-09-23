@@ -44,9 +44,9 @@ A ingestão assina o curinga `fabrica/maquinas/+/telemetria`.
 
 ## Faixas operacionais e limiares de alerta
 
-Faixas de temperatura definidas no enunciado; demais sinais definidos pelo
-grupo de forma coerente com o cenário (conjunto motobomba com motor de
-2 polos, 60 Hz, rotação nominal ~3500 RPM):
+As faixas de temperatura são as do enunciado. As dos outros sinais fomos nós
+que definimos, tentando manter coerência com o cenário (motor de 2 polos a
+60 Hz, girando por volta de 3500 RPM):
 
 | Sinal | Normal | Atenção | Crítico |
 |---|---|---|---|
@@ -54,7 +54,7 @@ grupo de forma coerente com o cenário (conjunto motobomba com motor de
 | Vibração (mm/s) | 1,0-3,5 | 3,5-5,0 | > 5,0 |
 | Corrente (A) | 6,0-9,0 | 9,0-11,0 | > 11,0 |
 | Rotação (RPM) | 3400-3600 | 3300-3400 ou 3600-3700 | < 3300 ou > 3700 |
-| Gás (%) | < 20 | 20-40 | > 40 |
+| Gás (%) | < 45 | 45-60 | > 60 |
 | Vazão (L/min) | 20-40 | 10-20 ou 40-45 | < 10 ou > 45 |
 
 Interpretação física: queda de RPM com corrente e temperatura altas indica
@@ -70,10 +70,17 @@ a seco.
 
 `status` da máquina = pior classificação entre os sinais no instante da leitura.
 
-> Modo demonstração (sensor em bancada): o DHT22 lê temperatura ambiente
-> (~25 °C). O firmware aplica um offset configurável (`TEMP_OFFSET`, padrão
-> +45 °C) para levar a leitura à faixa industrial do enunciado; aquecer o
-> sensor com o dedo dispara a anomalia ao vivo na apresentação.
+> Modo demonstração (sensor em bancada): o DHT22 lê a temperatura ambiente,
+> não a de um motor. O firmware soma um offset (`TEMP_OFFSET`, padrão +40 °C)
+> para levar a leitura à faixa do enunciado; aquecer o sensor com o dedo
+> dispara a anomalia ao vivo na apresentação. O offset era +45 até a bancada
+> de 21/09: a sala estava em 30 °C, a conta dava 75,1 °C e as máquinas
+> nasciam em "atenção" sem nada de errado.
+
+> A faixa de gás é em % do fundo de escala do ADC, não em ppm: sem calibrar o
+> MQ com gás de referência, ppm seria um número inventado. Os limiares saíram
+> da medida em ar limpo com o sensor já aquecido, 31 % (ADC ~1260 de 4095).
+> Com os 20 % que usávamos antes, a M03 ficava permanentemente em atenção.
 
 ## Schema no InfluxDB
 

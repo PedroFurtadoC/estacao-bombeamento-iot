@@ -1,8 +1,9 @@
 # 04 - Dashboard (Desafio 3)
 
-Dashboard **"Mini Central de Monitoramento IoT"** provisionado como código em
-`infra/grafana/provisioning/dashboards/mini-central.json`, carregado
-automaticamente ao subir o Grafana (`docker compose up`).
+O dashboard se chama "Mini Central de Monitoramento IoT" e vive em
+`infra/grafana/provisioning/dashboards/mini-central.json`. Ele é carregado
+sozinho quando o Grafana sobe, então ninguém precisa importar nada nem
+refazer painel na mão.
 
 ## Painéis (mínimos exigidos + extras)
 
@@ -72,18 +73,19 @@ from(bucket: "iot")
 
 ## Alertas
 
-Além dos painéis, o Grafana tem **duas regras de alerta provisionadas como
-código** em `infra/grafana/provisioning/alerting/alertas.yaml`. Elas sobem
-junto com a stack, igual ao dashboard, e são avaliadas a cada minuto.
+Fora os painéis, há duas regras de alerta em
+`infra/grafana/provisioning/alerting/alertas.yaml`. Sobem junto com a stack,
+igual ao dashboard, e são avaliadas a cada minuto.
 
 | Regra | Condição | Por que importa |
 |---|---|---|
 | Temperatura critica na motobomba | temperatura acima de 80 °C por 1 min | faixa crítica definida no enunciado |
 | Vibracao critica (possivel cavitacao) | vibração acima de 5 mm/s por 1 min | assinatura de cavitação ou desgaste de rolamento |
 
-Cada regra gera **uma instância por máquina**, então o alerta identifica qual
-motobomba está em falha. Se uma ESP32 parar de publicar, a regra entra em
-`NoData`, o que também sinaliza dispositivo offline.
+Cada regra gera uma instância por máquina, então o alerta já diz qual
+motobomba está em falha em vez de só avisar que "algo" passou do limite. Se
+uma ESP32 para de publicar, a regra entra em `NoData` — o que serve de aviso
+de dispositivo offline.
 
 Para ver o estado: menu Alerting, Alert rules. Teste validado em bancada com a
 M01 publicando 85 °C, que levou a regra a `Firing` para a M01 e manteve a M02 e

@@ -1,121 +1,140 @@
 # 05 - Análise (Desafio 4)
 
-As respostas 1 a 5 usam a base de dados coletada em **21/09/2026** (2160
-registros, 720 por máquina, exportados em `dados/export/telemetria.csv` pelo
-`backend/tools/exportar_csv.py`): backfill de 2 h do simulador com a janela de
-anomalia na M01. Se a base for gerada de novo (por exemplo com as ESP32 no dia
-da apresentação), atualize os números pelos mesmos painéis/consultas indicados.
-As demais respostas se baseiam na arquitetura.
+As perguntas 1 a 5 são respondidas com a base coletada em 21/09/2026: 2160
+registros, 720 por máquina, exportados para `dados/export/telemetria.csv` pelo
+`backend/tools/exportar_csv.py`. É um backfill de 2 h do simulador, com a
+janela de anomalia na M01. Se a base for gerada de novo — por exemplo com as
+ESP32 ligadas no dia da apresentação — os números mudam, e é só refazer pelos
+mesmos painéis indicados em cada resposta. As perguntas 6 a 10 são sobre a
+arquitetura e não dependem da base.
 
 ## 1. Qual máquina apresentou maior temperatura?
 
-**Resposta:** **M01**, com pico de **82,6 °C** em **21/09/2026 às 08:13:51**.
-M02 e M03 não passaram de 74,1 °C e 75,0 °C, dentro da faixa normal.
+A M01, com pico de 82,6 °C em 21/09/2026 às 08:13:51. A M02 e a M03 não
+passaram de 74,1 °C e 75,0 °C, ou seja, ficaram dentro da faixa normal o tempo
+todo.
 
-> Como obter: painel "Temperatura ao longo do tempo" → inspecionar máximo por
-> série; ou Flux `max()` agrupado por `machine`.
+Onde ver: painel "Temperatura ao longo do tempo", olhando o máximo de cada
+série; ou `max()` em Flux agrupado por `machine`.
 
 ## 2. Qual máquina apresentou maior vibração?
 
-**Resposta:** **M01**, com pico de **5,8 mm/s** às 08:11:21 (faixa crítica:
-acima de 5 mm/s). M02 e M03 ficaram em no máximo 3,4 e 3,2 mm/s.
+De novo a M01, com 5,8 mm/s às 08:11:21 — acima dos 5 mm/s que definimos como
+faixa crítica. M02 e M03 chegaram no máximo a 3,4 e 3,2 mm/s.
 
-> Painel "Vibração ao longo do tempo", mesmo procedimento.
+Mesmo procedimento, no painel de vibração.
 
 ## 3. Existe relação entre temperatura e corrente?
 
-**Resposta:** **Sim, correlação positiva.** Na M01 o coeficiente de Pearson
-entre temperatura e corrente nas 720 leituras foi **r = 0,63**. Comparando as
-fases da mesma máquina:
+Existe, e é positiva. Nas 720 leituras da M01 o coeficiente de Pearson entre
+temperatura e corrente deu r = 0,63. Separando as duas fases da mesma máquina
+a relação fica mais clara:
 
 | Fase (M01) | Leituras | Temperatura | Corrente | Rotação | Vibração | Vazão |
 |---|---|---|---|---|---|---|
 | Normal | 684 | 68,1 °C | 8,1 A | 3494 RPM | 1,65 mm/s | 30,0 L/min |
 | Anomalia | 36 | 81,6 °C | 11,4 A | 3258 RPM | 5,40 mm/s | 12,5 L/min |
 
-**Fundamentação:** em motores, aumento de carga eleva a corrente e, por efeito
-Joule (I²R), a temperatura. As duas séries sobem juntas na anomalia enquanto a
-rotação cai, assinatura de sobrecarga/atrito.
+A explicação é direta: mais carga no motor puxa mais corrente, e a corrente
+aquece o enrolamento por efeito Joule (I²R). Por isso as duas séries sobem
+juntas enquanto a rotação cai — é a assinatura de sobrecarga.
 
 ## 4. Em que momento ocorreu a condição anormal?
 
-**Resposta:** em **21/09/2026, das 08:08:01 às 08:13:51** (6 minutos, 36
-leituras consecutivas em alerta, 34 delas críticas), máquina **M01**, sinal
-**temperatura**, atingindo **82,6 °C** (faixa crítica: > 80 °C), acompanhada de
-vibração até 5,8 mm/s, corrente até 11,4 A e rotação caindo a 3234 RPM.
+Em 21/09/2026, das 08:08:01 às 08:13:51: 6 minutos, 36 leituras seguidas fora
+do normal, 34 delas já na faixa crítica. Foi na M01, puxada pela temperatura,
+que chegou aos 82,6 °C. No mesmo intervalo a vibração foi a 5,8 mm/s, a
+corrente a 11,4 A, a rotação caiu para 3234 RPM e a vazão despencou de 30 para
+12,5 L/min.
 
-> Zoom no painel de temperatura; o painel "Eventos de alerta" delimita a janela.
+Dá para ver dando zoom no painel de temperatura; o painel de eventos de alerta
+delimita a janela.
 
 ## 5. O evento poderia indicar uma falha?
 
-Sim. No contexto da motobomba, temperatura acima de 80 °C sustentada com
-corrente elevada e queda de RPM indica sobrecarga/atrito (desgaste de
-rolamento ou selo mecânico); vibração crítica simultânea apontaria para
-**cavitação** (bolhas de vapor implodindo no rotor, falha clássica de bombas
-centrífugas); corrente muito baixa indicaria **operação a seco** (perda de
-escorva). No nosso evento, o padrão observado (temperatura e corrente altas,
-rotação em queda, vibração crítica e vazão caindo de 30 para 12,5 L/min) sugere
-**sobrecarga com cavitação**: o rotor perde vazão, o motor trabalha mais e
-aquece. É exatamente o tipo de evento que a manutenção preditiva busca
-antecipar.
+Sim. Temperatura acima de 80 °C sustentada, com corrente alta e rotação
+caindo, é sobrecarga ou atrito — rolamento gasto, selo mecânico apertado. A
+vibração crítica ao mesmo tempo aponta para cavitação, que é quando bolhas de
+vapor se formam e implodem dentro do rotor; é a falha clássica de bomba
+centrífuga. Corrente muito baixa, ao contrário, indicaria bomba trabalhando a
+seco, com perda de escorva.
+
+No nosso evento os cinco sinais se moveram juntos na direção certa para
+sobrecarga com cavitação: a vazão caiu pela metade, o motor passou a puxar
+mais corrente para manter a rotação, e aqueceu. É o tipo de padrão que a
+manutenção preditiva tenta pegar antes da quebra.
 
 ## 6. Qual informação deveria gerar um alerta?
 
-> Esta resposta está **implementada**, não só descrita: há duas regras de
-> alerta ativas no Grafana, provisionadas em
-> `infra/grafana/provisioning/alerting/alertas.yaml`, uma para temperatura
-> acima de 80 °C e outra para vibração acima de 5 mm/s, ambas com uma instância
-> por máquina. Detalhes em [`04-dashboard.md`](04-dashboard.md).
+Essa resposta está implementada, não só descrita: há duas regras ativas no
+Grafana, em `infra/grafana/provisioning/alerting/alertas.yaml`, uma para
+temperatura acima de 80 °C e outra para vibração acima de 5 mm/s, ambas com
+uma instância por máquina. Detalhes em [`04-dashboard.md`](04-dashboard.md).
 
-Qualquer sinal na faixa **crítica** (temperatura > 80 °C, vibração > 5 mm/s,
-corrente > 11 A, rotação fora de 3300-3700 RPM, gás > 40 %) e também a
-**transição** para atenção quando persistente (> 2 min), além de máquina
-**offline** (LWT do MQTT) e umidade anormalmente alta na casa de bombas
-(possível vazamento). Alertas de borda: LED vermelho/alarme local; alertas de
-plataforma: regra no Grafana.
+O critério geral é qualquer sinal entrando na faixa crítica: temperatura acima
+de 80 °C, vibração acima de 5 mm/s, corrente acima de 11 A, rotação fora de
+3300–3700 RPM, gás acima de 60 %. Além disso, vale alertar quando a máquina
+fica em atenção por tempo demais (acima de 2 min), quando some da rede (o LWT
+do MQTT marca `offline`) e quando a umidade da casa de bombas sobe muito, que
+é indício de vazamento.
+
+Vale separar dois níveis: o alerta de borda, que é o LED vermelho aceso na
+hora pela própria placa, e o alerta de plataforma, que é a regra do Grafana,
+com histórico e possibilidade de notificar alguém.
 
 ## 7. Qual dado deveria ser armazenado por mais tempo?
 
-Os **eventos de alerta/anomalias** e os **agregados históricos** (médias
-horárias): são a base de auditoria e manutenção preditiva. A telemetria bruta
-de alta frequência pode expirar em ~30 dias (política de retenção do bucket);
-detalhes em [`03-modelo-de-dados.md`](03-modelo-de-dados.md).
+Os eventos de alerta e os agregados históricos, tipo média por hora. São eles
+que sustentam auditoria e manutenção preditiva: para saber se uma bomba está
+piorando ao longo de meses, a média horária basta. A telemetria bruta a cada
+10 segundos tem valor por pouco tempo e pode expirar — no nosso bucket ela
+vive 30 dias (ver [`03-modelo-de-dados.md`](03-modelo-de-dados.md)).
 
 ## 8. Qual informação poderia ser processada no edge?
 
-A **classificação do status** (normal/atenção/crítico), e este projeto **já
-faz isso**: o ESP32 compara cada leitura com os limiares e aciona o LED RGB
-(HW-479) / alarme (HW-481) localmente, com latência de milissegundos e sem
-depender da rede. Também são candidatos: filtragem/RMS da vibração,
-downsampling e detecção de outliers antes do envio.
+A classificação do status, e o projeto já faz isso: a ESP32 compara cada
+leitura com os limiares de `config.h` e aciona o LED RGB da M01 ou o alarme da
+M03 na hora, sem depender da rede. Numa demonstração é fácil de mostrar —
+segurando o DHT22 entre os dedos o LED muda de cor antes de o dashboard
+atualizar.
+
+Outras coisas que caberiam na borda: filtrar ruído e calcular RMS da vibração
+em vez de mandar amostra bruta; reduzir a taxa de envio quando o sinal está
+estável; e descartar outlier isolado (uma leitura absurda entre duas normais
+quase sempre é falha de leitura, não do equipamento).
 
 ## 9. Quais dados deveriam ser protegidos?
 
-- **Credenciais**: Wi-Fi, usuários do broker, tokens do InfluxDB e do Grafana
-  (neste repo ficam fora do Git: `secrets.h`, `.env`);
-- **Telemetria em trânsito e em repouso**: uma estação de bombeamento de água
-  é **infraestrutura crítica**: telemetria revela padrão operacional do
-  abastecimento e um ataque poderia mascarar falhas ou parar bombas. Em
-  produção, TLS no MQTT e no HTTP;
-- **Acesso ao dashboard**: autenticação e papéis (operador × administrador).
+Credenciais em primeiro lugar: senha do Wi-Fi, usuários do broker, tokens do
+InfluxDB e do Grafana. Neste repositório eles ficam fora do Git, em
+`secrets.h` e `.env`, e só os arquivos `.example` são versionados.
 
-Detalhes em [`06-seguranca.md`](06-seguranca.md).
+Depois a telemetria em si. Estação de bombeamento de água é infraestrutura
+crítica: a série temporal mostra o padrão operacional do abastecimento, e quem
+conseguisse escrever no tópico poderia mascarar uma falha ou provocar uma
+parada. Em produção isso pede TLS no MQTT e no HTTP.
+
+E o acesso ao dashboard, com autenticação e papéis separados — operador só
+enxerga, administrador edita.
+
+Mais detalhes em [`06-seguranca.md`](06-seguranca.md).
 
 ## 10. Qual seria a arquitetura escolhida para uma implantação real?
 
-A mesma topologia, endurecida e escalada. Como o protótipo roda inteiro em
-Docker, levá-lo para servidores é trocar o endereço do broker, sem alterar
-código. Em produção:
+A mesma topologia, endurecida e com redundância. Como o protótipo já roda todo
+em contêiner, levar para servidor é mais trocar endereço e credencial do que
+reescrever código. O que mudaria:
 
-- ESP32 industriais (ou gateways) com **MQTT sobre TLS** e autenticação por
-  certificado por dispositivo;
-- Broker gerenciado/cluster (EMQX, HiveMQ ou AWS IoT Core);
-- Ingestão como serviço redundante (containers orquestrados, Kubernetes) com
-  fila de amortecimento (por ex. Kafka) para picos;
-- InfluxDB/TimescaleDB gerenciado com backup e retenção por camadas
-  (bruto → agregado);
-- Grafana corporativo com SSO, alertas para e-mail/Telegram e on-call;
-- Observabilidade da própria plataforma (logs e métricas da ingestão).
+- MQTT sobre TLS, com certificado por dispositivo, em vez de acesso anônimo;
+- broker em cluster ou gerenciado (EMQX, HiveMQ, AWS IoT Core) no lugar de um
+  Mosquitto só;
+- ingestão rodando em mais de uma réplica, com uma fila na frente (Kafka, por
+  exemplo) para aguentar pico sem perder mensagem;
+- banco gerenciado, com backup e retenção em camadas: bruto por dias,
+  agregado por anos;
+- Grafana com SSO, notificação por e-mail ou Telegram e escala de plantão;
+- monitoramento da própria plataforma — se a ingestão morre às 3 da manhã,
+  alguém precisa ficar sabendo.
 
-O protótipo didático preserva 1:1 os papéis dessa arquitetura: cada peça tem
-um equivalente direto de produção.
+O protótipo mantém os mesmos papéis dessa arquitetura, cada peça com um
+equivalente direto do lado de produção.

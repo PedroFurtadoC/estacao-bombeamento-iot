@@ -1,8 +1,9 @@
 # 01 - Requisitos da Atividade
 
-Fonte: enunciado "Projeto IoT / Prova Parcial" (UNAERP, Prof. Carlos Formigoni).
-Este documento consolida **todos** os requisitos e aponta onde cada um é atendido
-neste repositório (rastreabilidade).
+Fonte: enunciado "Projeto IoT / Prova Parcial" (UNAERP, Prof. Carlos
+Formigoni). Este documento junta os requisitos num lugar só e aponta onde cada
+um é atendido no repositório, para não descobrirmos na véspera que faltou
+alguma coisa.
 
 ## Objetivo
 
@@ -15,15 +16,16 @@ com sistema de visualização.
 A equipe foi contratada para monitorar uma pequena fábrica com **3 máquinas**
 (M01, M02, M03). Cada máquina possui **4 sinais**:
 
-> **Contextualização adotada pelo grupo:** a "fábrica" é uma **estação de
-> bombeamento de água** e as 3 máquinas são **conjuntos motobomba** (motor
-> elétrico de 2 polos + bomba centrífuga, nominal ~3500 RPM). Essa escolha dá
-> significado físico a todos os sinais: temperatura = carcaça do motor;
-> vibração = cavitação/desgaste de rolamento (fenômeno acústico); corrente =
-> carga do motor (detecta operação a seco); rotação = RPM do conjunto;
-> umidade da casa de bombas = indício de vazamento; gás = segurança de espaço
-> confinado. Estação de água é infraestrutura crítica, o que enriquece as
-> respostas de segurança e de arquitetura real do Desafio 4.
+> **Cenário escolhido pelo grupo:** a "fábrica" do enunciado virou uma
+> estação de bombeamento de água, e as 3 máquinas são conjuntos motobomba
+> (motor de 2 polos + bomba centrífuga, ~3500 RPM). Escolhemos isso para os
+> quatro sinais terem significado físico em vez de serem números soltos:
+> temperatura é a carcaça do motor, vibração é cavitação ou rolamento gasto,
+> corrente é a carga (e denuncia bomba girando a seco) e rotação é o RPM do
+> conjunto. Os extras seguem a mesma lógica: umidade alta na casa de bombas é
+> vazamento, e gás é segurança de espaço confinado. De quebra, estação de água
+> é infraestrutura crítica, o que dá o que falar nas perguntas de segurança do
+> Desafio 4.
 
 | Sinal | Unidade adotada | Observação |
 |---|---|---|
@@ -53,9 +55,9 @@ A equipe foi contratada para monitorar uma pequena fábrica com **3 máquinas**
 | B | 1 ESP32 + dados de sensores (9 sinais; sugestão BME280/BMP280) | até 3 |
 | **C (escolhida)** | **3 ESP32 + dados de sensores** (1 sensor real por ESP32, ou o sinal que o grupo escolher monitorar) | **até 4** |
 
-**Estratégia adotada (opção C):** cada ESP32 representa uma máquina e possui ao
-menos um sensor físico; os sinais sem sensor físico são simulados por software
-no próprio dispositivo (prática explicitamente permitida pelo enunciado).
+Fomos na opção C: uma ESP32 por máquina, cada uma com sensor físico de
+verdade. Os sinais que não têm sensor são gerados no próprio dispositivo, o
+que o enunciado permite.
 
 | ESP32 | Sensores físicos | Sinais reais | Sinais simulados no firmware |
 |---|---|---|---|
@@ -63,13 +65,16 @@ no próprio dispositivo (prática explicitamente permitida pelo enunciado).
 | M02 | DHT22 + sensor de vazão hall | Temperatura (+ umidade), vazão | Vibração, corrente, rotação |
 | M03 | DHT22 + MQ (gás) | Temperatura (+ umidade), gás | Vibração, corrente, rotação, vazão |
 
-Todas as máquinas têm **pelo menos 2 sensores reais**: temperatura em todas
-(1 DHT22 por ESP32, espelhando a sugestão do professor de "um BME280 para cada
-ESP32"), vazão nas M01/M02 e gás na M03, superando com folga o mínimo da opção C. A vazão
-é o principal indicador de processo de uma bomba: queda indica
-obstrução/cavitação e zero indica operação a seco. Atuadores de borda: LED RGB
-HW-479 (semáforo de status) e LED flash HW-481 (alarme em condição crítica),
-que demonstram processamento no edge.
+Cada máquina ficou com dois sensores reais, não um: o DHT22 de temperatura em
+todas (que é a sugestão do professor de "um BME280 para cada ESP32", com o
+sensor que tínhamos), mais vazão na M01 e na M02 e gás na M03. A vazão entrou
+porque é o indicador de processo de uma bomba — cai quando obstrui, zera
+quando a bomba gira seca.
+
+Tem também dois atuadores, que são a parte de processamento na borda: o LED
+RGB HW-479 na M01 funciona como semáforo do status e o LED flash HW-481 na M03
+dispara no crítico. Os dois são acionados pela própria placa, sem passar pela
+rede.
 
 ## Desafio 1: Arquitetura
 

@@ -1,14 +1,9 @@
-"""Simulador das 3 máquinas da fábrica (Desafio 2).
+"""Simulador das 3 máquinas (Desafio 2), e plano B se alguma ESP32 falhar.
 
-Publica telemetria via MQTT com o mesmo contrato JSON do firmware:
-variação normal, pequenas oscilações e janelas de anomalia.
+Publica no mesmo contrato JSON do firmware.
 
-Modos:
   Tempo real:  python simulador.py --duracao 300 --intervalo 10
   Backfill:    python simulador.py --backfill 2h --intervalo 10 --anomalia
-               (insere registros retroativos de uma vez, garantindo os 500+)
-
-Também serve de plano B na apresentação, caso alguma ESP32 falhe.
 """
 
 from __future__ import annotations
@@ -26,7 +21,6 @@ FUSO_LOCAL = timezone(timedelta(hours=-3))
 MAQUINAS = ("M01", "M02", "M03")
 
 # (base, passo, mínimo normal, máximo normal) por sinal
-# Rotação: conjunto motobomba com motor de 2 polos (60 Hz), nominal ~3500 RPM
 PERFIS = {
     "temperature": (70.0, 0.6, 65.0, 75.0),
     "vibration": (2.2, 0.25, 1.0, 3.4),
@@ -64,8 +58,7 @@ class Maquina:
         for sinal, (_, passo, minimo, maximo) in PERFIS.items():
             atual = self.valores[sinal] + random.uniform(-passo, passo)
             if anomalia:
-                # Anomalia correlacionada: carga sobe -> corrente e temperatura
-                # sobem juntas, vibração acompanha, rotação cai.
+                # carga sobe: corrente e temperatura juntas, rotação cai
                 alvos = {
                     "temperature": (82.0, 78.0, 86.0),
                     "current": (11.5, 10.0, 13.0),
@@ -90,13 +83,29 @@ class Maquina:
         return leitura
 
 
-def em_anomalia(indice: int, total: int, habilitada: bool, maquina: str) -> bool:
-    """Janela de anomalia na M01, em ~80% do percurso, durando ~5% dos passos."""
-    if not habilitada or maquina != "M01" or total <= 0:
+# No modo contínuo, mesmos tempos do firmware (SIM_ANOMALIA_* em config.h)
+ANOMALIA_PERIODO_S = 15 * 60
+ANOMALIA_DURACAO_S = 60
+
+
+def em_anomalia(indice: int, total: int, habilitada: bool, maquina: str, intervalo: float) -> bool:
+    """Diz se este passo cai na janela de anomalia. Sempre na M01.
+
+    Com total de passos conhecido (backfill, ou --duracao), a janela fica a
+    80% do percurso: sobra base normal antes e o pico fica perto do fim, que é
+    o que se mostra no zoom. Sem --duracao não existe percurso, então ela se
+    repete a cada 15 min, igual ao firmware. Antes devolvia False para sempre
+    nesse caso, e o --anomalia do plano B não fazia nada.
+    """
+    if not habilitada or maquina != "M01":
         return False
-    inicio = int(total * 0.80)
-    fim = inicio + max(6, int(total * 0.05))
-    return inicio <= indice < fim
+    if total > 0:
+        inicio = int(total * 0.80)
+        fim = inicio + max(6, int(total * 0.05))
+        return inicio <= indice < fim
+    passos_ciclo = max(2, round(ANOMALIA_PERIODO_S / intervalo))
+    passos_janela = max(1, round(ANOMALIA_DURACAO_S / intervalo))
+    return indice % passos_ciclo >= passos_ciclo - passos_janela
 
 
 def principal() -> int:
@@ -135,7 +144,7 @@ def principal() -> int:
         for i in range(passos):
             momento = inicio + timedelta(seconds=i * args.intervalo)
             for maquina in maquinas:
-                publicar(maquina, momento, em_anomalia(i, passos, args.anomalia, maquina.nome))
+                publicar(maquina, momento, em_anomalia(i, passos, args.anomalia, maquina.nome, args.intervalo))
         print(f"Concluído: {publicados} registros publicados.")
     else:
         fim = time.monotonic() + args.duracao if args.duracao else None
@@ -146,7 +155,7 @@ def principal() -> int:
             while fim is None or time.monotonic() < fim:
                 momento = datetime.now(FUSO_LOCAL)
                 for maquina in maquinas:
-                    publicar(maquina, momento, em_anomalia(i, passos_estimados, args.anomalia, maquina.nome))
+                    publicar(maquina, momento, em_anomalia(i, passos_estimados, args.anomalia, maquina.nome, args.intervalo))
                 i += 1
                 time.sleep(args.intervalo)
         except KeyboardInterrupt:

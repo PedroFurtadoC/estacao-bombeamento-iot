@@ -27,9 +27,9 @@ Plano de testes do protótipo. Marcar "ok" ou "falhou" e anotar evidências (pri
 |---|---|---|---|---|
 | T3.1 | Compilação 3 envs | `pio run -d firmware` | `maquina01/02/03` compilam sem erro | ok (21/09, M01 na DevKit) |
 | T3.2 | Conexão Wi-Fi + MQTT | Monitor serial (`pio device monitor`) | Conecta ao hotspot e publica a cada 10 s | parcial (21/09: M01 conectou na UaiFai só depois de mudar o hotspot para 2,4 GHz; MQTT pendente de teste com a stack no ar) |
-| T3.3 | Leitura DHT22 (nas 3 máquinas) | Comparar serial com termômetro/ambiente | Temperatura plausível; `fonte=hibrido` | falhou na M01 (21/09: NaN; pino puxado para cima mas sem resposta como DHT22/DHT11; conferir módulo) |
-| T3.4 | Vazão hall (M01 e M02) | Soprar na turbina do sensor | `flow` sai de 0 no serial e no painel de vazão | [ ] |
-| T3.5 | Gás MQ (M03) | Isqueiro sem acender (MQ-2) ou álcool (MQ-135), após ~2 min de aquecimento | Pico de gás; status muda | [ ] |
+| T3.3 | Leitura DHT22 (nas 3 máquinas) | Comparar serial com termômetro/ambiente | Temperatura plausível; `fonte=hibrido` | ok na M02 e na M03 (21/09: 30,0 °C / 58,6 % e 29,8 °C / 56,5 %, estáveis). Falhou enquanto a M01 estava no S2 Mini — era contato, não o sensor (ver registro). Refazer com a M01 na DevKit |
+| T3.4 | Vazão hall (M01 e M02) | Soprar na turbina do sensor | `flow` sai de 0 no serial e no painel de vazão | ok na M02 (21/09: 286 pulsos em 10 s = 28,6 Hz → 0,39 L/min, com o sensor em 3,3 V e sem divisor). M01 pendente |
+| T3.5 | Gás MQ (M03) | Isqueiro sem acender (MQ-2) ou álcool (MQ-135), após ~2 min de aquecimento | Pico de gás; status muda | parcial (21/09: leitura estável em ar limpo, 30,8 % / ADC 1260. Falta provocar com isqueiro) |
 | T3.6 | Edge/LEDs | Forçar leitura crítica (aquecer DHT22 com o dedo com `TEMP_OFFSET` de demo) | LED RGB muda verde→amarelo→vermelho; HW-481 pisca no crítico | [ ] |
 | T3.7 | Queda de rede | Desligar hotspot por 30 s | ESP32 reconecta sozinho e volta a publicar | [ ] |
 | T3.8 | LWT | Desligar uma ESP32 | Tópico `status` marca `offline` | [ ] |
@@ -56,3 +56,41 @@ a ESP32 não enxerga 5 GHz).
   (`WriteOptions(batch_size=200, flush_interval=1000)`), 2160/2160.
 - M01 na DevKit: gravação por USB funciona, mas o auto-reset falha em parte
   das tentativas ("Wrong boot mode 0x17"); repetir o upload resolve.
+- O DHT22 que não lia na M01 não estava queimado. As duas LOLIN S2 Mini vieram
+  com a barra de pinos solta, e jumper enfiado no furo sem solda não fecha
+  contato: uma varredura dos 12 pinos da fileira externa mostrou tudo em nível
+  alto e nenhum pino respondendo como DHT22. O mesmo sensor leu de primeira no
+  ESP32-S3, que já vem com header soldado. Lição para a bancada: soldar a barra
+  antes de acusar sensor.
+- Gravação por placa: a DevKit às vezes precisa do BOTÃO BOOT segurado durante
+  o "Connecting..."; o S3 grava sozinho pela porta USB-C marcada `UART`.
+
+## Registro de 23/09/2026
+
+Revisão do código com a stack ainda fora do ar (o notebook usado nesta sessão
+não tem Docker instalado). O que foi verificado sem broker:
+
+- `pio run` compila os três environments (`maquina01`, `maquina02`,
+  `maquina03`) sem aviso;
+- a lógica de status da ingestão foi exercitada com os payloads reais
+  capturados no serial em 21/09 e com casos de borda (JSON quebrado, máquina
+  fora da lista, campo como texto): todos os inválidos são descartados com log
+  e nenhum derruba o serviço;
+- a janela de anomalia do simulador foi conferida nos dois modos: no backfill
+  continua a 80 % do percurso e, em tempo real sem `--duracao`, agora se repete
+  a cada 15 min por 60 s, como o firmware.
+
+Três defeitos corrigidos nesta revisão (detalhe em cada arquivo):
+
+1. toda a telemetria estava sendo publicada com a flag **retida** do MQTT, por
+   causa de uma sobrecarga do PubSubClient que casava `publish(topico, payload,
+   tamanho)` com a versão `(topico, string, retained)`. O broker guardava a
+   última leitura de cada máquina e reentregava para qualquer assinante novo:
+   ao reiniciar a ingestão, leitura velha voltava para o banco;
+2. o `--anomalia` do simulador não fazia nada no modo contínuo, que é
+   justamente o plano B da apresentação;
+3. os limiares de gás (20 %) e o offset de temperatura (+45) deixavam M03 e M02
+   permanentemente em "atenção" com tudo funcionando normalmente.
+
+Ainda pendente: T1.2, T2.1, T2.5, T3.2 (com a stack no ar), T3.6, T3.7, T3.8 e
+todo o T4.

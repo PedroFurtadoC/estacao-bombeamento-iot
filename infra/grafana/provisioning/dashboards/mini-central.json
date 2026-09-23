@@ -32,7 +32,7 @@
     {
       "id": 1,
       "type": "stat",
-      "title": "Painel 1: Temperatura atual",
+      "title": "Temperatura atual",
       "gridPos": {
         "h": 6,
         "w": 8,
@@ -92,7 +92,7 @@
     {
       "id": 6,
       "type": "stat",
-      "title": "Painel 6: Máquinas normais",
+      "title": "Máquinas normais",
       "gridPos": {
         "h": 6,
         "w": 4,
@@ -154,7 +154,7 @@
     {
       "id": 7,
       "type": "stat",
-      "title": "Painel 7: Eventos de alerta",
+      "title": "Eventos de alerta",
       "gridPos": {
         "h": 6,
         "w": 4,
@@ -304,11 +304,11 @@
               },
               {
                 "color": "yellow",
-                "value": 20
+                "value": 45
               },
               {
                 "color": "red",
-                "value": 40
+                "value": 60
               }
             ]
           }
@@ -343,7 +343,7 @@
     {
       "id": 2,
       "type": "timeseries",
-      "title": "Painel 2: Temperatura ao longo do tempo",
+      "title": "Temperatura ao longo do tempo",
       "gridPos": {
         "h": 10,
         "w": 12,
@@ -462,7 +462,7 @@
     {
       "id": 3,
       "type": "timeseries",
-      "title": "Painel 3: Vibração ao longo do tempo",
+      "title": "Vibração ao longo do tempo",
       "gridPos": {
         "h": 10,
         "w": 12,
@@ -581,7 +581,7 @@
     {
       "id": 4,
       "type": "timeseries",
-      "title": "Painel 4: Corrente elétrica",
+      "title": "Corrente elétrica",
       "gridPos": {
         "h": 10,
         "w": 12,
@@ -699,7 +699,7 @@
     {
       "id": 5,
       "type": "timeseries",
-      "title": "Painel 5: Rotação da máquina (RPM)",
+      "title": "Rotação da máquina (RPM)",
       "gridPos": {
         "h": 10,
         "w": 12,

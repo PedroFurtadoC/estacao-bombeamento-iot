@@ -1,13 +1,12 @@
 # 11 - Começando do Zero
 
-Guia para quem vai rodar o projeto pela primeira vez, numa máquina onde nada
-está instalado. Do clone até o dashboard funcionando leva cerca de 15 minutos,
-sendo quase tudo download.
+Para quem vai rodar o projeto pela primeira vez, num computador onde não tem
+nada instalado. Do clone ao dashboard funcionando dá uns 15 minutos, e quase
+tudo é tempo de download.
 
-**Você não precisa de ESP32 nem de sensor nenhum para rodar isto.** O simulador
-gera os dados das três motobombas e o sistema funciona inteiro. O hardware entra
-depois, e o passo a passo dele está em
-[`09-guia-de-bancada.md`](09-guia-de-bancada.md).
+Não precisa de ESP32 nem de sensor para chegar até o fim deste guia: o
+simulador publica as três motobombas e o sistema roda completo. O hardware
+entra depois, em [`09-guia-de-bancada.md`](09-guia-de-bancada.md).
 
 ## 1. Instalar o que é necessário
 
@@ -93,9 +92,9 @@ python backend/simulator/simulador.py --intervalo 10
 Vá em <http://localhost:3000>. O usuário e a senha são os que você colocou no
 `infra/.env`.
 
-Você não precisa importar nada nem criar painel: o dashboard, a conexão com o
-banco e as regras de alerta já sobem configurados junto com a stack. Isso é
-proposital, para que todo mundo do grupo veja exatamente a mesma tela.
+Não precisa importar nada nem criar painel: dashboard, conexão com o banco e
+regras de alerta sobem configurados junto com a stack. É de propósito, para
+todo mundo do grupo ver exatamente a mesma tela.
 
 O que você deve ver:
 
@@ -160,9 +159,9 @@ Use o `-v` só quando quiser mesmo começar do zero.
 
 ## Onde mexer em cada coisa
 
-O projeto inteiro é configurado por arquivo, e não pela interface. Mudança
-feita direto no Grafana funciona na hora, mas some quando a stack é recriada e
-não chega para o resto do grupo. O certo é editar o arquivo e recarregar.
+O projeto é configurado por arquivo, não pela interface. Mudança feita direto
+no Grafana até funciona na hora, mas some quando a stack é recriada e não
+chega para o resto do grupo. O certo é editar o arquivo e recarregar.
 
 | O que mudar | Arquivo |
 |---|---|
