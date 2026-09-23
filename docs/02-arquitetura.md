@@ -7,11 +7,11 @@ flowchart LR
     subgraph Maquinas["Estação de bombeamento (3 conjuntos motobomba)"]
         direction TB
         subgraph M01["Motobomba 01"]
-            S1["DHT22 + vazão hall<br/>temperatura + vazão"] --> E1["ESP32-S2<br/>Mini"]
+            S1["DHT22 + vazão hall<br/>temperatura + vazão"] --> E1["ESP32<br/>DevKit"]
             E1 --> A1["LED RGB HW-479<br/>semáforo de status"]
         end
         subgraph M02["Motobomba 02"]
-            S2["DHT22 + vazão hall<br/>temperatura + vazão"] --> E2["ESP32-S2<br/>Mini"]
+            S2["DHT22 + vazão hall<br/>temperatura + vazão"] --> E2["ESP32-S3<br/>DevKitC-1"]
         end
         subgraph M03["Motobomba 03"]
             S3["DHT22 + MQ<br/>temperatura + gás"] --> E3["ESP32<br/>DevKit"]

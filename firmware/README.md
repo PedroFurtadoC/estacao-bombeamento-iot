@@ -9,20 +9,13 @@ environment em `platformio.ini`; o mapa de pinos de cada placa fica em
 
 | Máquina | Environment | Placa (`board`) | Sensores | Atuador |
 |---|---|---|---|---|
-| M01 | `maquina01` | LOLIN S2 Mini (`lolin_s2_mini`) | DHT22 + vazão YF-S201C | LED RGB HW-479 |
+| M01 | `maquina01` | ESP32 DevKit V1 (`esp32dev`) | DHT22 + vazão YF-S201C | LED RGB HW-479 |
 | M02 | `maquina02` | ESP32-S3-N16R8, formato DevKitC-1 (`esp32-s3-devkitc-1`) | DHT22 + vazão YF-S402 | nenhum |
 | M03 | `maquina03` | ESP32 DevKit V1 (`esp32dev`) | DHT22 + MQ (gás) | LED flash HW-481 |
 
 Para trocar a placa de uma máquina troque só o `extends`/`board` do
-environment (`s2mini`, `s3n16r8` ou `board = esp32dev`); os pinos seguem a
+environment (`board = esp32dev`, `s3n16r8` ou `s2mini`); os pinos seguem a
 tabela da placa, escolhida em `config.h` pelo alvo compilado.
-
-**S2 Mini: só a fileira externa tem header.** Tudo abaixo usa apenas esses pinos:
-
-```
-esquerda : EN   3   5   7   9   11   12   3V3
-direita  : 39   37  35  33  18  16   GND  VBUS (5 V do USB)
-```
 
 ## Preparação
 
@@ -33,26 +26,24 @@ pio run -e maquina01 -t upload                   # grava (repetir p/ maquina02/0
 pio device monitor                               # monitor serial 115200
 ```
 
-> **S2 Mini, primeira gravação:** a placa só aparece como porta COM em modo
-> de gravação (ROM). Com o USB desligado, segure o botão **0**, ligue o USB e
-> solte o **0** (ou, já ligado: segure **0**, toque **RST**, solte **0**).
-> `pio device list` deve mostrar uma porta com `VID:PID=303A:0002`. Mande o
-> upload; a placa reinicia sozinha e volta com a serial USB do firmware
-> (`303A:80C2`). A partir daí o upload é automático, sem botão, e o
-> "Upload and Monitor" do VS Code funciona direto. A DevKit grava direto.
+> **DevKit (M01 e M03):** grava pela micro-USB com o chip USB-serial da placa
+> (CP2102 ou CH340; se o Windows não mostrar a porta COM, instale o driver).
+> Algumas DevKit não entram sozinhas em modo de gravação: se o upload travar
+> em `Connecting......`, segure o botão **BOOT** até começar a gravar.
 >
-> **S3-N16R8:** grave e monitore pela porta USB-C marcada **`UART`** (ou
+> **S3-N16R8 (M02):** grave e monitore pela porta USB-C marcada **`UART`** (ou
 > `COM`), que tem o chip USB-serial CH343 (`VID:PID=1A86:55D3`): auto-reset,
 > sem botão. A porta `USB` vai direto ao chip e não mostra a serial com a
 > configuração atual. Flash de 16 MB já configurada; a PSRAM fica desligada
 > (o firmware não precisa).
 >
-> Por trás: ao terminar de gravar, o esptool reinicia o S2 e a porta some
-> antes de ele fechá-la, o que gerava um `FAILED` falso mesmo com
-> `Hash of data verified`. O `tools/pio_s2.py` (ativado por `extra_scripts`
-> nos environments S2) troca o esptool pelo `tools/esptool_s2.py`, que
-> reconhece esse caso, espera a placa reaparecer e devolve sucesso; qualquer
-> erro antes da gravação continua sendo erro.
+> **Se alguma máquina for montada num LOLIN S2 Mini** (base `s2mini` do
+> `platformio.ini`): a placa só aparece como porta COM em modo de gravação na
+> primeira vez. Com o USB desligado, segure o botão **0**, ligue o USB e
+> solte o **0**; `pio device list` deve mostrar `VID:PID=303A:0002`. Depois da
+> primeira gravação o upload é automático. O `tools/pio_s2.py` (ativado por
+> `extra_scripts` na base `s2mini`) troca o esptool pelo `tools/esptool_s2.py`,
+> que trata o `FAILED` falso que o esptool dá ao reiniciar o S2 pela USB nativa.
 
 ## Ligações (wiring)
 
@@ -62,13 +53,16 @@ pio device monitor                               # monitor serial 115200
 > Montagem furo a furo na protoboard, uma figura por máquina:
 > [`../docs/assets/protoboard.html`](../docs/assets/protoboard.html).
 
-### Máquina 01 (S2 Mini): DHT22 + vazão YF-S201C + LED RGB (HW-479)
+### Máquina 01 (DevKit): DHT22 + vazão YF-S201C + LED RGB (HW-479)
 
-| Módulo | Pino módulo | S2 Mini |
+| Módulo | Pino módulo | ESP32 DevKit |
 |---|---|---|
-| DHT22/AM2302 | VCC / DATA / GND | 3V3 / **GPIO 7** / GND |
-| Vazão YF-S201C (1/2") | VCC / GND / SINAL | **VBUS (5 V)** / GND / **GPIO 5** (via divisor, ver abaixo) |
-| HW-479 (RGB) | R / G / B / - | **GPIO 9 / GPIO 11 / GPIO 12** / GND |
+| DHT22/AM2302 | VCC / DATA / GND | 3V3 / **GPIO 4** / GND |
+| Vazão YF-S201C (1/2") | VCC / GND / SINAL | **VIN (5 V)** / GND / **GPIO 33** (via divisor, ver abaixo) |
+| HW-479 (RGB) | R / G / B / - | **GPIO 25 / GPIO 26 / GPIO 27** / GND |
+
+> Na DevKit não use os GPIO 0, 2, 12 e 15 (interferem no boot) nem 6 a 11
+> (flash interna). GPIO 34, 35, 36 e 39 são somente entrada, sem pull-up.
 
 ### Máquina 02 (ESP32-S3-N16R8): DHT22 + vazão YF-S402
 
@@ -81,7 +75,7 @@ No S3 não use os GPIO 35/36/37 (PSRAM octal do R8), 19/20 (USB), 43/44
 (serial do monitor), 0/3/45/46 (boot) nem 48 (LED RGB da placa). Todos os
 pinos vêm escritos na serigrafia.
 
-Mesma ligação da M01, sem o LED. Só muda o sensor (e o fator de conversão, já no `platformio.ini`).
+É a M01 sem o LED e com a vazão em 3,3 V. Só muda o sensor (e o fator de conversão, já no `platformio.ini`).
 
 ### Máquina 03 (DevKit): DHT22 + MQ (gás) + LED flash (HW-481)
 
@@ -100,14 +94,18 @@ Mesma ligação da M01, sem o LED. Só muda o sensor (e o fator de conversão, j
 
 ### Se alguma máquina for montada na outra placa
 
-| Sinal | S2 Mini | ESP32-S3-N16R8 | ESP32 DevKit |
+| Sinal | ESP32 DevKit (M01, M03) | ESP32-S3-N16R8 (M02) | LOLIN S2 Mini (opcional) |
 |---|---|---|---|
-| DHT22 DATA | GPIO 7 | GPIO 4 | GPIO 4 |
-| Vazão (pulsos) | GPIO 5 | GPIO 5 | GPIO 33 |
-| MQ A0 | GPIO 3 | GPIO 6 | GPIO 34 |
-| LED RGB R / G / B | GPIO 9 / 11 / 12 | GPIO 15 / 16 / 17 | GPIO 25 / 26 / 27 |
-| LED flash | GPIO 9 | GPIO 15 | GPIO 25 |
-| 5 V para MQ e vazão | VBUS | 5V | VIN |
+| DHT22 DATA | GPIO 4 | GPIO 4 | GPIO 7 |
+| Vazão (pulsos) | GPIO 33 | GPIO 5 | GPIO 5 |
+| MQ A0 | GPIO 34 | GPIO 6 | GPIO 3 |
+| LED RGB R / G / B | GPIO 25 / 26 / 27 | GPIO 15 / 16 / 17 | GPIO 9 / 11 / 12 |
+| LED flash | GPIO 25 | GPIO 15 | GPIO 9 |
+| 5 V para MQ e vazão | VIN | 5V | VBUS |
+
+No S2 Mini só a fileira externa de pinos tem header
+(`EN 3 5 7 9 11 12 3V3` / `39 37 35 33 18 16 GND VBUS`); os pinos acima usam
+só ela.
 
 ### Divisores de tensão (obrigatórios em todo sensor alimentado em 5 V)
 

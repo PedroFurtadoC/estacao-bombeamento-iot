@@ -7,15 +7,15 @@ notebook: nenhum serviço na nuvem, nenhuma dependência de internet.
 
 | Máquina | Placa | Sensores | GPIOs | Atuador |
 |---|---|---|---|---|
-| M01 | S2 Mini | DHT22 + vazão YF-S201C | 7 (DHT), 5 (vazão) | LED RGB HW-479 (9, 11, 12) |
+| M01 | DevKit | DHT22 + vazão YF-S201C | 4 (DHT), 33 (vazão) | LED RGB HW-479 (25, 26, 27) |
 | M02 | ESP32-S3-N16R8 | DHT22 + vazão YF-S402 | 4 (DHT), 5 (vazão) | nenhum |
 | M03 | DevKit | DHT22 + MQ (gás) | 4 (DHT), 34 (MQ) | LED flash HW-481 (25) |
 
-No S2 Mini só a fileira externa de pinos tem header (**solde a barra de
-pinos**: jumper espetado no furo não faz contato); o 5 V é o pino `VBUS`. Na
-primeira gravação do S2 Mini, segure `0`, toque `RST`, solte `0`, faça o upload
-e aperte `RST` ao terminar. O S3 grava pela porta `UART` sem botão; a DevKit
-da M03 precisa do `BOOT` segurado durante o `Connecting...`.
+As duas DevKit (M01 e M03) são iguais: o 5 V é o pino `VIN` e o `GPIO 4` do
+DHT22 fica na fileira oposta ao `VIN`. Ao gravar, se o upload travar em
+`Connecting...`, segure o `BOOT` até começar. O S3 grava pela porta `UART`
+sem botão. Etiquete as duas DevKit logo depois de gravar: por fora são
+idênticas e só o firmware diz qual é a M01 e qual é a M03.
 
 Esquema elétrico completo, pino a pino, e a **lista do que levar para a
 bancada**: [`10-esquema-eletrico.md`](10-esquema-eletrico.md).

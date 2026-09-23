@@ -18,7 +18,7 @@
 // A placa vem do "board" do environment (platformio.ini); o alvo compilado
 // (ESP32 classico, ESP32-S2 ou ESP32-S3) escolhe o mapa de pinos.
 #if CONFIG_IDF_TARGET_ESP32S2
-// LOLIN S2 Mini (M01: DHT22 + vazao + LED RGB). So a fileira EXTERNA tem header:
+// LOLIN S2 Mini (opcional, nao usado nesta montagem). So a fileira EXTERNA tem header:
 //   esquerda: EN  3  5  7  9  11  12  3V3
 //   direita : 39  37  35  33  18  16  GND  VBUS
 // ADC1 do S2 = GPIO 1..10 (o ADC2 para com o Wi-Fi ligado).
@@ -45,11 +45,12 @@
 #define PINO_LED_ONBOARD RGB_BUILTIN // LED RGB enderecavel da placa (GPIO 48);
                                      // o core trata digitalWrite nele: acende branco
 #else
-// ESP32 DevKit V1 / WROOM-32 (M03: DHT22 + MQ + LED flash)
+// ESP32 DevKit V1 / WROOM-32 (M01: DHT22 + vazao + LED RGB; M03: DHT22 + MQ + LED flash)
+// Pinos evitados: 0, 2, 12, 15 (boot); 34/35/36/39 sao somente entrada.
 #define PINO_DHT 4          // DHT22/AM2302 DATA
-#define PINO_MQ_AO 34       // MQ A0 via divisor - ADC1, somente entrada
-#define PINO_VAZAO 33       // sensor de vazao hall, pulsos (se usado na DevKit)
-#define PINO_LED_R 25       // LED RGB HW-479
+#define PINO_MQ_AO 34       // MQ A0 via divisor - ADC1, somente entrada (M03)
+#define PINO_VAZAO 33       // sensor de vazao hall, pulsos via divisor (M01)
+#define PINO_LED_R 25       // LED RGB HW-479 (M01)
 #define PINO_LED_G 26
 #define PINO_LED_B 27
 #define PINO_LED_FLASH 25   // LED flash HW-481 (M03)

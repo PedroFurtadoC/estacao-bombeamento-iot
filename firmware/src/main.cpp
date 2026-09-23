@@ -6,7 +6,7 @@
 // monitor serial e publica o JSON via MQTT no topico
 // fabrica/maquinas/<ID>/telemetria.
 //
-// Roda em LOLIN S2 Mini (M01, M02) e ESP32 DevKit (M03); o mapa
+// Roda em ESP32 DevKit (M01, M03) e ESP32-S3 (M02); o mapa
 // de pinos de cada placa esta em config.h.
 //
 // A rede nunca bloqueia a coleta: sem Wi-Fi ou sem broker os
@@ -319,8 +319,8 @@ void publicar(const Leitura &l) {
 
 void setup() {
     Serial.begin(115200);
-    // No S2 Mini a serial e a USB nativa (CDC): espera ate 3 s o PC abrir a
-    // porta para nao perder as primeiras linhas. Na DevKit passa direto.
+    // Em placas de USB nativa (CDC, ex.: S2 Mini) espera ate 3 s o PC abrir a
+    // porta para nao perder as primeiras linhas. Na DevKit e no S3 passa direto.
     unsigned long inicio = millis();
     while (!Serial && millis() - inicio < 3000) delay(10);
     Serial.printf("\n[boot] no %s%s\n", MACHINE_ID, MODO_BANCADA ? " - MODO BANCADA (sem rede)" : "");

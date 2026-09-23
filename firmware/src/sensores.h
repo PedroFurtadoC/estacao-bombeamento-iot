@@ -6,7 +6,7 @@
 // ============================================================
 // Leitura dos sensores fisicos. Os blocos sao independentes:
 // uma maquina pode combinar DHT22 + vazao ou DHT22 + MQ (build flags).
-// Os pinos vem de config.h e mudam conforme a placa (S2 Mini / DevKit).
+// Os pinos vem de config.h e mudam conforme a placa (DevKit / S3 / S2 Mini).
 // Cada funcao devolve o valor processado e, opcionalmente, o valor bruto
 // (contagens do ADC, pulsos) para conferencia no monitor serial.
 // ============================================================

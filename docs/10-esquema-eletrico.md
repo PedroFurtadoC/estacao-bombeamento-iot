@@ -7,12 +7,12 @@ documento, do sensor mais seguro para o mais arriscado.
 
 | Item | Quantidade | Observação |
 |---|---|---|
-| LOLIN ESP32-S2 Mini | 1 | M01 (só a fileira externa de pinos tem header; **soldar a barra de pinos**) |
+| ESP32 DevKit (WROOM-32, 30 pinos) | 2 (mais reserva) | M01 e M03 (header soldado; gravar pela micro-USB) |
 | ESP32-S3-N16R8 (formato DevKitC-1, 44 pinos) | 1 | M02 (header soldado; gravar pela porta `UART`/`COM`) |
-| ESP32 DevKit (WROOM-32) | 1 (mais reserva) | M03 |
-| Cabo USB de dados | 3 | cabo só de carga não grava a placa; S2 Mini e S3 usam USB-C |
+| Cabo USB de dados | 3 | cabo só de carga não grava a placa; DevKit usa micro-USB, S3 usa USB-C |
 | Protoboard | 3 pequenas ou 1 grande | uma montagem por máquina facilita |
 | Jumpers macho-macho | cerca de 30 | ligação geral e conector do sensor de vazão |
+| Jumpers fêmea-macho | 4 | a fileira da DevKit que fica fora da protoboard (2 por DevKit) |
 | DHT22 / AM2302 | 3 | uma por placa |
 | Sensor de vazão hall | 2 | YF-S201C (1/2") na M01 e YF-S402 (1/4") na M02 |
 | MQ (gás) | 1 | M03 |
@@ -51,45 +51,50 @@ exceção: alimentada em 3,3 V, o sinal já nasce em 3,3 V e vai direto.
 | Pino da placa | Fornece | Alimenta |
 |---|---|---|
 | `3V3` | 3,3 V | DHT22 · vazão da M02 |
-| `VIN` na DevKit (em algumas vem escrito `5V`) · `VBUS` no S2 Mini · `5V` no S3 | 5 V vindos do USB | Vazão da M01, MQ |
-| `GND` (DevKit e S3 têm vários; o S2 Mini tem um na fileira externa) | referência comum | tudo |
+| `VIN` na DevKit (em algumas vem escrito `5V`) · `5V` no S3 | 5 V vindos do USB | Vazão da M01, MQ |
+| `GND` (DevKit e S3 têm vários) | referência comum | tudo |
 
 ## Placas desta montagem
 
-O grupo tem **um LOLIN ESP32-S2 Mini, um ESP32-S3-N16R8 (formato DevKitC-1)
-e uma ESP32 DevKit (WROOM-32)**. Cada
-seção seguinte traz o esquema elétrico da máquina desenhado na placa que ela
-usa; a tabela abaixo diz qual placa monta cada máquina e qual pino usar em
-cada uma. O firmware escolhe o mapa de pinos sozinho pelo `board` do
-environment (`firmware/platformio.ini`), então basta gravar o environment
-certo na placa certa.
+O grupo tem **duas ESP32 DevKit (WROOM-32, 30 pinos) e um ESP32-S3-N16R8
+(formato DevKitC-1)**. Cada seção seguinte traz o esquema elétrico da máquina
+desenhado na placa que ela usa; a tabela abaixo diz qual placa monta cada
+máquina e qual pino usar em cada uma. O firmware escolhe o mapa de pinos
+sozinho pelo `board` do environment (`firmware/platformio.ini`), então basta
+gravar o environment certo na placa certa.
 
 | Máquina | Placa | Sensores | Atuador |
 |---|---|---|---|
-| M01 | S2 Mini | DHT22 + vazão YF-S201C | LED RGB HW-479 |
+| M01 | DevKit | DHT22 + vazão YF-S201C | LED RGB HW-479 |
 | M02 | ESP32-S3-N16R8 | DHT22 + vazão YF-S402 | nenhum |
 | M03 | DevKit | DHT22 + MQ (gás) | LED flash HW-481 |
 
-**No S2 Mini só a fileira externa de pinos tem header.** Olhando a placa com
-o USB-C para baixo, ela é:
+**A DevKit de 30 pinos** tem duas fileiras de 15 pinos, escritas na
+serigrafia. Olhando a placa com o USB para a esquerda:
 
 ```
-esquerda : EN   3   5   7   9   11   12   3V3
-direita  : 39   37  35  33  18  16   GND  VBUS
+fileira de cima : 3V3  GND  15  2   4   16  17  5   18  19  21  RX0  TX0  22  23
+fileira de baixo: VIN  GND  13  12  14  27  26  25  33  32  35  34   VN   VP  EN
 ```
 
-Os pinos da fileira interna (1, 2, 4, 6, 8, 10, 13, 14, 15, 17, 21, 34, 36,
-38, 40) não são usados. `VBUS` é o 5 V do USB, equivalente ao `VIN` da DevKit.
+Tudo que a M01 e a M03 usam está nessas duas fileiras: `3V3` e `GPIO 4`
+(DHT22) numa, `VIN`, `GND`, os `GPIO 25/26/27` (LED), `33` (vazão) e `34`
+(MQ) na outra. Não ligue nada em `EN`, `0`, `2`, `12` e `15` (boot) nem nos
+pinos `6` a `11` (não vêm no header: são a flash interna). `34`, `35`, `VP` e
+`VN` são somente entrada.
 
-| Sinal | S2 Mini (M01) | S3-N16R8 (M02) | DevKit (M03) |
-|---|---|---|---|
-| DHT22 DATA | GPIO 7 | GPIO 4 | GPIO 4 |
-| Vazão (pulsos) | GPIO 5 | GPIO 5 | GPIO 33 |
-| MQ A0 | GPIO 3 (ADC1) | GPIO 6 (ADC1) | GPIO 34 (ADC1) |
-| LED RGB HW-479 R / G / B | GPIO 9 / 11 / 12 | GPIO 15 / 16 / 17 | GPIO 25 / 26 / 27 |
-| LED flash HW-481 S | GPIO 9 | GPIO 15 | GPIO 25 |
-| 3,3 V | `3V3` | `3V3` | `3V3` |
-| 5 V (MQ e vazão) | `VBUS` | `5V` | `VIN` |
+| Sinal | DevKit (M01 e M03) | S3-N16R8 (M02) |
+|---|---|---|
+| DHT22 DATA | GPIO 4 | GPIO 4 |
+| Vazão (pulsos) | GPIO 33 | GPIO 5 |
+| MQ A0 | GPIO 34 (ADC1) | GPIO 6 (ADC1) |
+| LED RGB HW-479 R / G / B | GPIO 25 / 26 / 27 | GPIO 15 / 16 / 17 |
+| LED flash HW-481 S | GPIO 25 | GPIO 15 |
+| 3,3 V | `3V3` | `3V3` |
+| 5 V (MQ e vazão) | `VIN` | `5V` |
+
+(Se alguma máquina for montada num LOLIN S2 Mini, o firmware também o
+suporta; os pinos dele estão em `firmware/README.md`.)
 
 **No S3-N16R8 (44 pinos, todos escritos na serigrafia)** não use: `35`, `36`,
 `37` (PSRAM octal do R8), `19`, `20` (USB), `43`, `44` (serial do monitor),
@@ -98,8 +103,7 @@ porta USB-C marcada `UART`/`COM`.
 
 Regras de tensão, divisores e pull-up valem igual nas três placas: o limite
 de 3,3 V no GPIO é o mesmo. Nesta montagem o único analógico é o MQ, na DevKit
-(GPIO 34, ADC1); se um MQ for parar num S2 Mini, use o GPIO 3, que é
-ADC1 (o ADC2 do S2 para de funcionar com o Wi-Fi ligado).
+da M03 (GPIO 34, ADC1; o ADC2 para de funcionar com o Wi-Fi ligado).
 
 **Duas figuras por máquina.** O esquema elétrico (o que liga em quê, com os
 divisores e os símbolos de alimentação) está em cada seção abaixo e nos
@@ -107,22 +111,16 @@ arquivos `assets/esquema-m01.svg`, `-m02.svg` e `-m03.svg`. A **montagem furo
 a furo na protoboard**, com a posição de cada módulo, jumper e resistor, está
 em [`assets/protoboard.html`](assets/protoboard.html) (abra no navegador; as
 figuras avulsas estão em `assets/protoboard-m01.svg`, `-m02.svg` e
-`-m03.svg`). Todas prontas para o relatório. Dois pontos que essas figuras resolvem: no S2 Mini sobra
-**um único furo livre por pino** (fileira `a` em cima e `j` embaixo), então
-divisores e junções ficam nas colunas livres ao lado; e a DevKit de 30 pinos
-tem 1,0" entre as fileiras e não atravessa uma protoboard comum: a fileira
-com `3V3`, `GND`, `GPIO 4` e `GPIO 25` entra na protoboard e a outra fica no
-ar, com um jumper fêmea-macho só no `GPIO 34` (e no `VIN`).
+`-m03.svg`). Todas prontas para o relatório. O ponto que essas figuras
+resolvem: a DevKit de 30 pinos tem 1,0" entre as fileiras e não atravessa uma
+protoboard comum. A fileira de baixo (`VIN`, `GND`, `25/26/27`, `33`, `34`)
+entra na fileira `a` da protoboard e a de cima fica no ar, com **dois jumpers
+fêmea-macho** por DevKit: `3V3` para o trilho vermelho e `GPIO 4` para o DATA
+do DHT22. Vale para a M01 e para a M03, que usam exatamente a mesma posição.
 
-Como a serial do S2 Mini sai pela USB nativa, na **primeira gravação** é
-preciso colocá-lo em modo de gravação na mão: com o USB desligado, segure o
-botão `0`, ligue o USB e solte o `0` (ou segure `0`, toque `RST`, solte `0`).
-Ele aparece como "Dispositivo Serial USB (COMx)"; mande o upload. Ao
-terminar, a placa reinicia sozinha já com o firmware e a serial USB dele.
-Nas próximas gravações o PlatformIO reinicia a placa sozinho pela serial USB,
-sem botão. (O firmware traz um wrapper do esptool, `firmware/tools/`, que
-trata o erro de porta que o esptool dá ao reiniciar o S2 pela USB nativa; sem
-ele a gravação aparecia como `FAILED` mesmo tendo dado certo.)
+A DevKit grava pela micro-USB sem preparo. Se o upload travar em
+`Connecting......`, segure o botão `BOOT` da placa até começar a gravar (em
+algumas DevKit o auto-reset do chip USB-serial não funciona).
 
 **Trilhos da protoboard.** Antes de ligar qualquer sensor, puxe três fios da
 ESP32 para os trilhos laterais: `3V3` para o trilho vermelho de cima, `VIN`
@@ -131,31 +129,35 @@ dois entre si. Assim cada sensor busca a tensão certa no trilho certo.
 
 **Como ler os esquemas.** As bandeiras `3V3` e `5 V` no alto e os símbolos
 de terra embaixo são os nós de alimentação: tudo que aponta para a mesma
-bandeira está ligado no mesmo pino da placa (`3V3`, `VBUS`/`VIN` ou `GND`).
+bandeira está ligado no mesmo pino da placa (`3V3`, `VIN`/`5V` ou `GND`).
 Fio colorido é sinal, e a cor segue a legenda da figura. O ponto preto é uma
 junção; `R1`/`R2` são o divisor de tensão. Pino tracejado com "não ligar"
 fica solto.
 
 ## Máquina 01: DHT22, vazão e LED RGB
 
-Placa: **S2 Mini**, sensor de vazão **YF-S201C**. Na tabela, o pino do S2
-Mini vem primeiro e o da DevKit entre parênteses, caso a máquina seja montada
-na outra placa.
+Placa: **ESP32 DevKit** (WROOM-32), sensor de vazão **YF-S201C**. Todos os
+pinos usados, menos `3V3` e `GPIO 4`, ficam na fileira do `VIN`; os dois da
+outra fileira chegam por jumper fêmea-macho (veja a protoboard).
 
-![Esquema elétrico da M01: S2 Mini com DHT22, vazão YF-S201C via divisor e LED RGB HW-479](assets/esquema-m01.svg)
+![Esquema elétrico da M01: ESP32 DevKit com DHT22, vazão YF-S201C via divisor e LED RGB HW-479](assets/esquema-m01.svg)
 
 | Componente | Pino do componente | Vai para | Observação |
 |---|---|---|---|
 | DHT22 | VCC | 3V3 | **nunca no 5 V**, veja o aviso abaixo |
-| DHT22 | DATA | GPIO 7 (DevKit: GPIO 4) | ligação direta, o módulo vermelho já tem pull-up interno |
+| DHT22 | DATA | GPIO 4 | ligação direta, o módulo vermelho já tem pull-up interno |
 | DHT22 | GND | GND | |
-| Vazão YF-S201C | VCC (vermelho) | VBUS (DevKit: VIN), 5 V | |
+| Vazão YF-S201C | VCC (vermelho) | VIN, 5 V | |
 | Vazão YF-S201C | GND (preto) | GND | |
-| Vazão YF-S201C | SINAL (amarelo) | GPIO 5 (DevKit: GPIO 33) | **nunca direto**, veja a seção do divisor |
-| HW-479 | R | GPIO 9 (DevKit: GPIO 25) | resistores já vêm na placa do módulo |
-| HW-479 | G | GPIO 11 (DevKit: GPIO 26) | |
-| HW-479 | B | GPIO 12 (DevKit: GPIO 27) | |
+| Vazão YF-S201C | SINAL (amarelo) | GPIO 33 | **nunca direto**, veja a seção do divisor |
+| HW-479 | R | GPIO 25 | resistores já vêm na placa do módulo |
+| HW-479 | G | GPIO 26 | |
+| HW-479 | B | GPIO 27 | |
 | HW-479 | GND | GND | é o pino marcado com um traço ou com o sinal de menos |
+
+Os `GPIO 25`, `26` e `27` são vizinhos na fileira do `VIN`, na mesma ordem
+`27 26 25`; o `33` vem logo depois do `25`. Isso deixa o LED e a vazão lado a
+lado na protoboard, como mostra a figura.
 
 > **Por que o DHT22 fica no 3,3 V.** O datasheet do AM2302 aceita de 3,3 V a
 > 5,5 V, mas a linha de dados sai na mesma tensão da alimentação. Ligando o
@@ -190,7 +192,7 @@ O YF-S402 mede de 0,3 a 6 L/min (73 Hz por L/min); o YF-S201C da M01, de 1 a
 
 ## Máquina 03: DHT22, MQ e LED flash
 
-Placa: **ESP32 DevKit** (a única desta montagem), pinos exatamente como no
+Placa: **ESP32 DevKit** (igual à da M01), pinos exatamente como no
 esquema. É a máquina que mais consome, por causa do aquecedor do MQ.
 
 ![Esquema elétrico da M03: DevKit com DHT22, MQ via divisor e LED flash HW-481](assets/esquema-m03.svg)
@@ -274,9 +276,9 @@ Identificação dos fios, que segue a convenção dos sensores hall de vazão:
 
 | Cor | Função | Vai para |
 |---|---|---|
-| Vermelho | VCC, de 5 V a 18 V | VBUS do S2 Mini (M01) · 5V do S3 (M02) |
+| Vermelho | VCC, de 5 V a 18 V | VIN da DevKit (M01) · 3V3 do S3 (M02, ver alternativa abaixo) |
 | Preto | GND | trilho de GND |
-| Amarelo | sinal de pulsos | GPIO 5 (nas duas placas), passando pelo divisor ou pelo pull-up |
+| Amarelo | sinal de pulsos | GPIO 33 na M01 (pelo divisor) · GPIO 5 na M02 (direto) |
 
 Fatores de conversão dos dois modelos (já definidos por máquina no
 `firmware/platformio.ini`): YF-S201C, 7,5 Hz por L/min (450 pulsos por
@@ -300,12 +302,11 @@ vazão travada em 0.
 2. Todos os GND no mesmo trilho, incluindo o dos divisores;
 3. Os dois divisores (vazão da M01 e MQ da M03) medindo no máximo 3,3 V na saída;
 4. DHT22 no 3V3, nunca no VIN;
-5. MQ e vazão da M01 no 5 V (`VIN`/`VBUS`), nunca no 3V3, senão não funcionam
+5. MQ e vazão da M01 no 5 V (`VIN`), nunca no 3V3, senão não funcionam
    direito; a vazão da M02 é a exceção, no `3V3` e sem divisor;
-6. Na DevKit, nada ligado nos pinos `EN`, `GPIO 0`, `GPIO 2`, `GPIO 12` e
-   `GPIO 15`, que interferem no boot da placa (no S2 Mini esses números não
-   têm essa função; o GPIO 12 do S2 Mini é um pino comum e é usado pelo LED).
-   No S3, os pinos de boot são `0`, `3`, `45` e `46`;
+6. Nas DevKit (M01 e M03), nada ligado nos pinos `EN`, `GPIO 0`, `GPIO 2`,
+   `GPIO 12` e `GPIO 15`, que interferem no boot da placa. No S3, os pinos de
+   boot são `0`, `3`, `45` e `46`;
 7. Cada placa etiquetada com M01, M02 ou M03, batendo com o firmware gravado.
 
 ## Teste pino a pino, depois de ligar

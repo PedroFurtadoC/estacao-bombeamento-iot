@@ -127,7 +127,7 @@
 <line class="fio w-3v3" x1="24" y1="545" x2="46" y2="545"/>
 <text class="legl" x="52" y="548" text-anchor="start">3V3</text>
 <line class="fio w-5v" x1="83.3" y1="545" x2="105.3" y2="545"/>
-<text class="legl" x="111.3" y="548" text-anchor="start">5 V (VBUS / VIN)</text>
+<text class="legl" x="111.3" y="548" text-anchor="start">5 V (VIN / 5V)</text>
 <line class="fio w-gnd" x1="208.89999999999998" y1="545" x2="230.89999999999998" y2="545"/>
 <text class="legl" x="236.89999999999998" y="548" text-anchor="start">GND (nó comum)</text>
 <line class="fio w-data" x1="324.29999999999995" y1="545" x2="346.29999999999995" y2="545"/>

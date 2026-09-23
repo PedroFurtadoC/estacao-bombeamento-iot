@@ -1,35 +1,48 @@
 # 05 - Análise (Desafio 4)
 
-As respostas 1 a 4 dependem dos dados coletados: preencher os campos marcados após a
-coleta, consultando o dashboard (instruções em cada item). As demais já estão
-respondidas com base na arquitetura.
+As respostas 1 a 5 usam a base de dados coletada em **21/09/2026** (2160
+registros, 720 por máquina, exportados em `dados/export/telemetria.csv` pelo
+`backend/tools/exportar_csv.py`): backfill de 2 h do simulador com a janela de
+anomalia na M01. Se a base for gerada de novo (por exemplo com as ESP32 no dia
+da apresentação), atualize os números pelos mesmos painéis/consultas indicados.
+As demais respostas se baseiam na arquitetura.
 
 ## 1. Qual máquina apresentou maior temperatura?
 
-**Resposta (preencher com os dados coletados):** `M__`, com pico de `__,_ °C` em `__/__ às __:__`.
+**Resposta:** **M01**, com pico de **82,6 °C** em **21/09/2026 às 08:13:51**.
+M02 e M03 não passaram de 74,1 °C e 75,0 °C, dentro da faixa normal.
 
 > Como obter: painel "Temperatura ao longo do tempo" → inspecionar máximo por
 > série; ou Flux `max()` agrupado por `machine`.
 
 ## 2. Qual máquina apresentou maior vibração?
 
-**Resposta (preencher com os dados coletados):** `M__`, com pico de `_,_ mm/s`.
+**Resposta:** **M01**, com pico de **5,8 mm/s** às 08:11:21 (faixa crítica:
+acima de 5 mm/s). M02 e M03 ficaram em no máximo 3,4 e 3,2 mm/s.
 
 > Painel "Vibração ao longo do tempo", mesmo procedimento.
 
 ## 3. Existe relação entre temperatura e corrente?
 
-**Resposta (preencher com os dados coletados):** `Sim/Não, descrever`.
+**Resposta:** **Sim, correlação positiva.** Na M01 o coeficiente de Pearson
+entre temperatura e corrente nas 720 leituras foi **r = 0,63**. Comparando as
+fases da mesma máquina:
 
-**Fundamentação esperada:** sim: em motores, aumento de carga eleva a corrente
-(efeito Joule, I²R) e consequentemente a temperatura. O simulador reproduz essa
-correlação (anomalia térmica acompanha elevação de corrente). Comparar as duas
-séries da mesma máquina no mesmo intervalo do dashboard.
+| Fase (M01) | Leituras | Temperatura | Corrente | Rotação | Vibração | Vazão |
+|---|---|---|---|---|---|---|
+| Normal | 684 | 68,1 °C | 8,1 A | 3494 RPM | 1,65 mm/s | 30,0 L/min |
+| Anomalia | 36 | 81,6 °C | 11,4 A | 3258 RPM | 5,40 mm/s | 12,5 L/min |
+
+**Fundamentação:** em motores, aumento de carga eleva a corrente e, por efeito
+Joule (I²R), a temperatura. As duas séries sobem juntas na anomalia enquanto a
+rotação cai, assinatura de sobrecarga/atrito.
 
 ## 4. Em que momento ocorreu a condição anormal?
 
-**Resposta (preencher com os dados coletados):** `__/__/____ às __:__`, máquina `M__`, sinal `temperatura`,
-atingindo `__ °C` (faixa crítica: > 80 °C).
+**Resposta:** em **21/09/2026, das 08:08:01 às 08:13:51** (6 minutos, 36
+leituras consecutivas em alerta, 34 delas críticas), máquina **M01**, sinal
+**temperatura**, atingindo **82,6 °C** (faixa crítica: > 80 °C), acompanhada de
+vibração até 5,8 mm/s, corrente até 11,4 A e rotação caindo a 3234 RPM.
 
 > Zoom no painel de temperatura; o painel "Eventos de alerta" delimita a janela.
 
@@ -40,9 +53,11 @@ corrente elevada e queda de RPM indica sobrecarga/atrito (desgaste de
 rolamento ou selo mecânico); vibração crítica simultânea apontaria para
 **cavitação** (bolhas de vapor implodindo no rotor, falha clássica de bombas
 centrífugas); corrente muito baixa indicaria **operação a seco** (perda de
-escorva). No nosso evento, o padrão observado sugere
-`completar com o observado`. É exatamente o tipo de evento que a manutenção
-preditiva busca antecipar.
+escorva). No nosso evento, o padrão observado (temperatura e corrente altas,
+rotação em queda, vibração crítica e vazão caindo de 30 para 12,5 L/min) sugere
+**sobrecarga com cavitação**: o rotor perde vazão, o motor trabalha mais e
+aquece. É exatamente o tipo de evento que a manutenção preditiva busca
+antecipar.
 
 ## 6. Qual informação deveria gerar um alerta?
 

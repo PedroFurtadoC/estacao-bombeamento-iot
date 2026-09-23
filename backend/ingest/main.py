@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 
 import paho.mqtt.client as mqtt
 from influxdb_client import InfluxDBClient, Point, WritePrecision
-from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client.client.write_api import WriteOptions
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("ingestao")
@@ -116,18 +116,27 @@ def criar_callback_mensagem(write_api):
         for campo in CAMPOS_OBRIGATORIOS + CAMPOS_OPCIONAIS:
             if isinstance(dados.get(campo), (int, float)) and not isinstance(dados.get(campo), bool):
                 ponto = ponto.field(campo, float(dados[campo]))
-        try:
-            write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=ponto)
-            log.info("gravado: %s status=%s", dados["machine"], status)
-        except Exception:
-            log.exception("erro ao gravar no InfluxDB")
+        # Escrita em lote (assíncrona): o ponto entra no buffer e é enviado
+        # com os demais; erros de gravação aparecem em erro_ao_gravar.
+        write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=ponto)
+        log.info("gravado: %s status=%s", dados["machine"], status)
 
     return ao_receber
 
 
+def erro_ao_gravar(_conf, _dados, excecao: Exception) -> None:
+    log.error("erro ao gravar lote no InfluxDB: %s", excecao)
+
+
 def principal() -> None:
     influx = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
-    write_api = influx.write_api(write_options=SYNCHRONOUS)
+    # Lotes de até 200 pontos ou a cada 1 s: em operação normal (18 msg/min)
+    # cada leitura sai em ~1 s; no backfill do simulador (2000+ mensagens em
+    # rajada) a gravação acompanha o broker em vez de estourar a fila dele.
+    write_api = influx.write_api(
+        write_options=WriteOptions(batch_size=200, flush_interval=1_000, retry_interval=2_000, max_retries=3),
+        error_callback=erro_ao_gravar,
+    )
 
     cliente = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="servico-ingestao")
     cliente.on_connect = ao_conectar
@@ -135,7 +144,11 @@ def principal() -> None:
     cliente.reconnect_delay_set(min_delay=1, max_delay=30)
     cliente.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
     log.info("ingestão iniciada, aguardando telemetria")
-    cliente.loop_forever(retry_first_connection=True)
+    try:
+        cliente.loop_forever(retry_first_connection=True)
+    finally:
+        write_api.close()  # descarrega o lote pendente ao encerrar
+        influx.close()
 
 
 if __name__ == "__main__":
