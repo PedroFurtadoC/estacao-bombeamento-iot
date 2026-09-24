@@ -3,8 +3,8 @@
 As perguntas 1 a 5 são respondidas com a base coletada em 21/09/2026: 2160
 registros, 720 por máquina, exportados para `dados/export/telemetria.csv` pelo
 `backend/tools/exportar_csv.py`. É um backfill de 2 h do simulador, com a
-janela de anomalia na M01. Se a base for gerada de novo — por exemplo com as
-ESP32 ligadas no dia da apresentação — os números mudam, e é só refazer pelos
+janela de anomalia na M01. Se a base for gerada de novo (por exemplo com as
+ESP32 ligadas no dia da apresentação), os números mudam, e é só refazer pelos
 mesmos painéis indicados em cada resposta. As perguntas 6 a 10 são sobre a
 arquitetura e não dependem da base.
 
@@ -19,7 +19,7 @@ série; ou `max()` em Flux agrupado por `machine`.
 
 ## 2. Qual máquina apresentou maior vibração?
 
-De novo a M01, com 5,8 mm/s às 08:11:21 — acima dos 5 mm/s que definimos como
+De novo a M01, com 5,8 mm/s às 08:11:21, acima dos 5 mm/s que definimos como
 faixa crítica. M02 e M03 chegaram no máximo a 3,4 e 3,2 mm/s.
 
 Mesmo procedimento, no painel de vibração.
@@ -37,7 +37,7 @@ a relação fica mais clara:
 
 A explicação é direta: mais carga no motor puxa mais corrente, e a corrente
 aquece o enrolamento por efeito Joule (I²R). Por isso as duas séries sobem
-juntas enquanto a rotação cai — é a assinatura de sobrecarga.
+juntas enquanto a rotação cai: é a assinatura de sobrecarga.
 
 ## 4. Em que momento ocorreu a condição anormal?
 
@@ -53,7 +53,7 @@ delimita a janela.
 ## 5. O evento poderia indicar uma falha?
 
 Sim. Temperatura acima de 80 °C sustentada, com corrente alta e rotação
-caindo, é sobrecarga ou atrito — rolamento gasto, selo mecânico apertado. A
+caindo, é sobrecarga ou atrito: rolamento gasto, selo mecânico apertado. A
 vibração crítica ao mesmo tempo aponta para cavitação, que é quando bolhas de
 vapor se formam e implodem dentro do rotor; é a falha clássica de bomba
 centrífuga. Corrente muito baixa, ao contrário, indicaria bomba trabalhando a
@@ -73,7 +73,7 @@ uma instância por máquina. Detalhes em [`04-dashboard.md`](04-dashboard.md).
 
 O critério geral é qualquer sinal entrando na faixa crítica: temperatura acima
 de 80 °C, vibração acima de 5 mm/s, corrente acima de 11 A, rotação fora de
-3300–3700 RPM, gás acima de 60 %. Além disso, vale alertar quando a máquina
+3300-3700 RPM, gás acima de 60 %. Além disso, vale alertar quando a máquina
 fica em atenção por tempo demais (acima de 2 min), quando some da rede (o LWT
 do MQTT marca `offline`) e quando a umidade da casa de bombas sobe muito, que
 é indício de vazamento.
@@ -87,14 +87,14 @@ com histórico e possibilidade de notificar alguém.
 Os eventos de alerta e os agregados históricos, tipo média por hora. São eles
 que sustentam auditoria e manutenção preditiva: para saber se uma bomba está
 piorando ao longo de meses, a média horária basta. A telemetria bruta a cada
-10 segundos tem valor por pouco tempo e pode expirar — no nosso bucket ela
+10 segundos tem valor por pouco tempo e pode expirar; no nosso bucket ela
 vive 30 dias (ver [`03-modelo-de-dados.md`](03-modelo-de-dados.md)).
 
 ## 8. Qual informação poderia ser processada no edge?
 
 A classificação do status, e o projeto já faz isso: a ESP32 compara cada
 leitura com os limiares de `config.h` e aciona o LED RGB da M01 ou o alarme da
-M03 na hora, sem depender da rede. Numa demonstração é fácil de mostrar —
+M03 na hora, sem depender da rede. Numa demonstração é fácil de mostrar:
 segurando o DHT22 entre os dedos o LED muda de cor antes de o dashboard
 atualizar.
 
@@ -114,7 +114,7 @@ crítica: a série temporal mostra o padrão operacional do abastecimento, e que
 conseguisse escrever no tópico poderia mascarar uma falha ou provocar uma
 parada. Em produção isso pede TLS no MQTT e no HTTP.
 
-E o acesso ao dashboard, com autenticação e papéis separados — operador só
+E o acesso ao dashboard, com autenticação e papéis separados: operador só
 enxerga, administrador edita.
 
 Mais detalhes em [`06-seguranca.md`](06-seguranca.md).
@@ -133,7 +133,7 @@ reescrever código. O que mudaria:
 - banco gerenciado, com backup e retenção em camadas: bruto por dias,
   agregado por anos;
 - Grafana com SSO, notificação por e-mail ou Telegram e escala de plantão;
-- monitoramento da própria plataforma — se a ingestão morre às 3 da manhã,
+- monitoramento da própria plataforma: se a ingestão morre às 3 da manhã,
   alguém precisa ficar sabendo.
 
 O protótipo mantém os mesmos papéis dessa arquitetura, cada peça com um

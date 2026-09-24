@@ -32,7 +32,7 @@ flowchart LR
 
 O professor sugeriu um sensor ambiental por ESP32, tipo BME280. Usamos o DHT22
 porque é o que o grupo tinha: temperatura e umidade em um fio só, com
-biblioteca pronta. A umidade entrou de brinde, mas tem sentido no cenário —
+biblioteca pronta. A umidade entrou de brinde, mas tem sentido no cenário:
 umidade alta na casa de bombas costuma ser vazamento.
 
 Na M01 e na M02 tem sensor de vazão de turbina com efeito hall, que gera pulsos
@@ -67,7 +67,7 @@ resposta local sai em milissegundos e continua funcionando com a rede caída.
 
 Na prática não são três placas iguais. A M02 acabou num ESP32-S3 porque as
 LOLIN S2 Mini que tínhamos vieram com a barra de pinos solta, e jumper
-espetado no furo sem solda não faz contato — perdemos uma noite inteira nisso
+espetado no furo sem solda não faz contato: perdemos uma noite inteira nisso
 antes de entender. O código é o mesmo para as três; só o mapa de pinos muda,
 escolhido em tempo de compilação pelo alvo (`firmware/src/config.h`).
 
@@ -91,7 +91,7 @@ do Wi-Fi da universidade.
 Um serviço próprio, em vez de ligar o broker direto no banco com Telegraf. Fica
 mais código para manter, mas é justamente a camada de back-end que o enunciado
 pede, e dá um lugar para validar: JSON malformado, máquina desconhecida, campo
-que veio como texto — tudo isso é descartado com log em vez de virar lixo no
+que veio como texto, tudo isso é descartado com log em vez de virar lixo no
 banco. É também onde o status é recalculado quando o payload não traz o dele.
 
 ### InfluxDB

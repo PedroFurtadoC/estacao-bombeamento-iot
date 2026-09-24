@@ -86,7 +86,7 @@
 <text class="pinl" x="540" y="315" text-anchor="middle">GND (preto)</text>
 <line class="fio w-sig" x1="250" y1="300" x2="470" y2="300"/>
 <text class="wlbl" x="360.0" y="294" text-anchor="middle">direto, pull-up interno da ESP32</text>
-<text class="nota" x="24" y="440" text-anchor="start">Sem divisor: sensor em 3,3 V, sinal 0–3,3 V, flag VAZAO_PULLUP_INTERNO=1 (validado: 28,6 Hz soprando). DATA no GPIO 4 (abaixo do RST), vazão no GPIO 5. Não usar 35-37, 19/20, 43/44, 0/3/45/46, 48.</text>
+<text class="nota" x="24" y="440" text-anchor="start">Sem divisor: sensor em 3,3 V, sinal 0-3,3 V, flag VAZAO_PULLUP_INTERNO=1 (validado: 28,6 Hz soprando). DATA no GPIO 4 (abaixo do RST), vazão no GPIO 5. Não usar 35-37, 19/20, 43/44, 0/3/45/46, 48.</text>
 <line class="fio w-3v3" x1="24" y1="465" x2="46" y2="465"/>
 <text class="legl" x="52" y="468" text-anchor="start">3V3</text>
 <line class="fio w-gnd" x1="83.3" y1="465" x2="105.3" y2="465"/>

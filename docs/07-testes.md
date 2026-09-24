@@ -18,7 +18,7 @@ Plano de testes do protótipo. Marcar "ok" ou "falhou" e anotar evidências (pri
 | T2.1 | Publicação simulada | `python backend/simulator/simulador.py --duracao 60 --intervalo 5` | Logs de publicação das 3 máquinas | [ ] |
 | T2.2 | Gravação no banco | Painéis do Grafana após T2.1 | Séries das 3 máquinas visíveis | ok (21/09: painel 1 com M01/M02/M03, painel 6 = 3) |
 | T2.3 | Backfill 500+ | `--backfill 2h --intervalo 10` e depois `python backend/tools/exportar_csv.py` | CSV com ≥ 500 linhas | ok (21/09: 2160 publicados = 2160 gravados = 2160 no CSV) |
-| T2.4 | Anomalia | `--anomalia` | Janela crítica visível; painel de alertas > 0 | ok (21/09: M01 08:08–08:13, 36 alertas, pico 82,6 °C) |
+| T2.4 | Anomalia | `--anomalia` | Janela crítica visível; painel de alertas > 0 | ok (21/09: M01 08:08 a 08:13, 36 alertas, pico 82,6 °C) |
 | T2.5 | Payload inválido | Publicar JSON malformado com `mosquitto_pub` | Ingestão loga descarte, não grava e não cai | [ ] |
 
 ## T3: Firmware (por ESP32)
@@ -27,7 +27,7 @@ Plano de testes do protótipo. Marcar "ok" ou "falhou" e anotar evidências (pri
 |---|---|---|---|---|
 | T3.1 | Compilação 3 envs | `pio run -d firmware` | `maquina01/02/03` compilam sem erro | ok (21/09, M01 na DevKit) |
 | T3.2 | Conexão Wi-Fi + MQTT | Monitor serial (`pio device monitor`) | Conecta ao hotspot e publica a cada 10 s | parcial (21/09: M01 conectou na UaiFai só depois de mudar o hotspot para 2,4 GHz; MQTT pendente de teste com a stack no ar) |
-| T3.3 | Leitura DHT22 (nas 3 máquinas) | Comparar serial com termômetro/ambiente | Temperatura plausível; `fonte=hibrido` | ok na M02 e na M03 (21/09: 30,0 °C / 58,6 % e 29,8 °C / 56,5 %, estáveis). Falhou enquanto a M01 estava no S2 Mini — era contato, não o sensor (ver registro). Refazer com a M01 na DevKit |
+| T3.3 | Leitura DHT22 (nas 3 máquinas) | Comparar serial com termômetro/ambiente | Temperatura plausível; `fonte=hibrido` | ok na M02 e na M03 (21/09: 30,0 °C / 58,6 % e 29,8 °C / 56,5 %, estáveis). Falhou enquanto a M01 estava no S2 Mini: era contato, não o sensor (ver registro). Refazer com a M01 na DevKit |
 | T3.4 | Vazão hall (M01 e M02) | Soprar na turbina do sensor | `flow` sai de 0 no serial e no painel de vazão | ok na M02 (21/09: 286 pulsos em 10 s = 28,6 Hz → 0,39 L/min, com o sensor em 3,3 V e sem divisor). M01 pendente |
 | T3.5 | Gás MQ (M03) | Isqueiro sem acender (MQ-2) ou álcool (MQ-135), após ~2 min de aquecimento | Pico de gás; status muda | parcial (21/09: leitura estável em ar limpo, 30,8 % / ADC 1260. Falta provocar com isqueiro) |
 | T3.6 | Edge/LEDs | Forçar leitura crítica (aquecer DHT22 com o dedo com `TEMP_OFFSET` de demo) | LED RGB muda verde→amarelo→vermelho; HW-481 pisca no crítico | [ ] |

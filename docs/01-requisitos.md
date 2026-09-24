@@ -68,7 +68,7 @@ que o enunciado permite.
 Cada máquina ficou com dois sensores reais, não um: o DHT22 de temperatura em
 todas (que é a sugestão do professor de "um BME280 para cada ESP32", com o
 sensor que tínhamos), mais vazão na M01 e na M02 e gás na M03. A vazão entrou
-porque é o indicador de processo de uma bomba — cai quando obstrui, zera
+porque é o indicador de processo de uma bomba: cai quando obstrui, zera
 quando a bomba gira seca.
 
 Tem também dois atuadores, que são a parte de processamento na borda: o LED

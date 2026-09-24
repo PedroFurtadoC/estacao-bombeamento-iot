@@ -84,7 +84,7 @@ igual ao dashboard, e são avaliadas a cada minuto.
 
 Cada regra gera uma instância por máquina, então o alerta já diz qual
 motobomba está em falha em vez de só avisar que "algo" passou do limite. Se
-uma ESP32 para de publicar, a regra entra em `NoData` — o que serve de aviso
+uma ESP32 para de publicar, a regra entra em `NoData`, o que serve de aviso
 de dispositivo offline.
 
 Para ver o estado: menu Alerting, Alert rules. Teste validado em bancada com a

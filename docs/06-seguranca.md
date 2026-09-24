@@ -22,12 +22,12 @@ O InfluxDB exige token e o Grafana exige usuário e senha, ambos definidos no
 fica só com o serviço de ingestão, que é quem precisa gravar.
 
 A ingestão valida tudo que chega: JSON que não é JSON, máquina fora da lista,
-campo obrigatório ausente ou vindo como texto — nada disso vira ponto no
+campo obrigatório ausente ou vindo como texto, nada disso vira ponto no
 banco, só uma linha de log. Um dispositivo com defeito, ou alguém publicando
 lixo no tópico, não contamina a base.
 
 Por último, o LWT do MQTT: se uma placa cai, o broker publica `offline` no
-tópico de status dela. Disponibilidade também é segurança — saber que um nó
+tópico de status dela. Disponibilidade também é segurança: saber que um nó
 está mudo é diferente de achar que está tudo bem porque não chegou alerta.
 
 ## O que não está, e sabemos
@@ -57,7 +57,7 @@ dos tokens.
 **Rede.** Segmentação, com a rede de automação separada da rede administrativa,
 firewall entre elas e nenhuma porta de banco exposta.
 
-**Acesso.** SSO e papéis no Grafana — operador vê, engenheiro edita.
+**Acesso.** SSO e papéis no Grafana: operador vê, engenheiro edita.
 
 **Auditoria.** Log de acesso e de alteração retido por anos, que é o que
 permite reconstruir o que aconteceu depois de um incidente.
@@ -68,7 +68,7 @@ atualizada com segurança vira passivo no dia que aparecer uma falha.
 ## Que dados merecem proteção
 
 Credenciais e tokens, por motivo óbvio. A telemetria, porque estação de água é
-infraestrutura crítica e a série revela o padrão de abastecimento — e porque
+infraestrutura crítica e a série revela o padrão de abastecimento, e porque
 quem escreve no tópico pode esconder uma falha real. Os eventos de falha, que
 têm peso contratual entre quem opera e quem mantém. E os dados de acesso dos
 usuários do dashboard.
