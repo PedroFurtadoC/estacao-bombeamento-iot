@@ -5,7 +5,7 @@ motobomba, em escala de bancada. Cada máquina tem uma ESP32 que lê os sensores
 classifica a condição ali mesmo na placa e publica a telemetria por MQTT. Um
 serviço em Python recebe, valida e grava no InfluxDB; o Grafana mostra.
 
-Roda inteiro no notebook, em contêineres Docker, sem internet — o que importa
+Roda inteiro no notebook, em contêineres Docker, sem internet, o que importa
 no dia da apresentação, em que a rede da sala não é garantida.
 
 > Disciplina Hardware Configurável e IoT, UNAERP.
@@ -46,7 +46,7 @@ Por que cada peça é essa e não outra: [`docs/02-arquitetura.md`](docs/02-arqu
 │   ├── docker-compose.yml   # Mosquitto + InfluxDB + Grafana + ingestão
 │   ├── mosquitto/           # Configuração do broker
 │   └── grafana/             # Datasource, dashboard e alertas versionados
-└── scripts/                 # Atalhos PowerShell (subir, simular, exportar)
+└── scripts/                 # Atalhos PowerShell (subir, simular, exportar, achar o broker)
 ```
 
 ## Como executar
@@ -62,7 +62,7 @@ python backend/simulator/simulador.py --backfill 50m --intervalo 10 --anomalia
 ```
 
 Abra <http://localhost:3000> com o usuário e a senha do `infra/.env`. O
-dashboard, a conexão com o banco e os alertas já sobem prontos — ninguém
+dashboard, a conexão com o banco e os alertas já sobem prontos: ninguém
 precisa importar nada.
 
 Não é preciso ter nenhuma ESP32 para isso funcionar: o simulador publica as
@@ -116,6 +116,9 @@ prático, para montar e rodar.
 
 ## Equipe
 
-| Integrante | Responsabilidade |
+| Integrante | RA |
 |---|---|
-| _preencher_ | _preencher_ |
+| André Fernando Machado | 837864 |
+| Igor Almeida Polegato | 838821 |
+| Jaqueline Santos Lopes | 839424 |
+| Pedro Furtado Cunha | 837711 |
