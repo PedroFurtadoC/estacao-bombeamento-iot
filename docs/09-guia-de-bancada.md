@@ -40,19 +40,33 @@ Grafana em <http://localhost:3000>, usuário e senha no `infra/.env`.
 
 ## Dia da montagem
 
-### 1. Ligar o hotspot do notebook
+### 1. Escolher a rede
 
-Windows: Configurações, Rede e Internet, Ponto de acesso móvel. Ligar e anotar
-o nome e a senha.
+As ESP32 e o notebook que roda o Docker precisam estar na **mesma rede**, e ela
+precisa ser de 2,4 GHz, porque a ESP32 não enxerga 5 GHz. Servem as duas
+opções:
 
-### 2. Descobrir o IP do notebook na rede do hotspot
+- **Rede que já existe** (roteador de casa, por exemplo). Mais simples quando
+  ela está disponível, não precisa configurar nada.
+- **Hotspot do notebook**, em Configurações, Rede e Internet, Ponto de acesso
+  móvel. É a opção portátil, que funciona em qualquer lugar, então costuma ser
+  a escolha para o dia da apresentação.
+
+### 2. Descobrir o IP do broker
+
+O endereço que as placas procuram é o IP **deste notebook na rede escolhida**.
+Ele muda conforme a rede, então não copie um valor pronto:
 
 ```powershell
-ipconfig
+.\scripts\broker.ps1
 ```
 
-Procure o adaptador do ponto de acesso móvel. O IPv4 costuma ser
-`192.168.137.1`. Esse é o endereço do broker para as ESP32.
+O script testa a porta 1883 em cada interface, descarta as internas do Docker e
+do WSL (que a ESP32 não enxerga) e imprime a linha pronta para colar no
+`secrets.h`. Se mais de um IP responder, ele lista todos: escolha o da rede em
+que as placas vão entrar.
+
+Se nenhum responder, a stack não está no ar. Volte para a preparação.
 
 ### 3. Preencher o secrets.h
 
@@ -60,7 +74,11 @@ Procure o adaptador do ponto de acesso móvel. O IPv4 costuma ser
 Copy-Item firmware/src/secrets.h.example firmware/src/secrets.h
 ```
 
-Editar o arquivo com o nome do hotspot, a senha e o IP do passo 2.
+Editar o arquivo com o nome da rede, a senha e o IP do passo 2.
+
+Esse é o ponto que mais dá problema: IP errado faz a placa conectar no Wi-Fi
+normalmente e nunca achar o broker, e aí o Grafana fica vazio sem nenhum erro
+aparente. O sintoma no serial é `[mqtt] falhou (rc=-2)`.
 
 ### 4. Gravar as três ESP32
 
@@ -109,8 +127,9 @@ No monitor serial você deve ver o Wi-Fi conectar, o MQTT conectar e uma linha
 
 | Sintoma | Causa provável | O que fazer |
 |---|---|---|
-| Serial trava em `[wifi] conectando...` | Nome ou senha do hotspot errados, ou hotspot em 5 GHz | Conferir o `secrets.h`; o ESP32 só enxerga redes de 2,4 GHz |
-| `[mqtt] falhou (rc=-2)` | IP do broker errado ou firewall do Windows | Conferir o IP com `ipconfig`; liberar a porta 1883 no firewall |
+| Serial trava em `[wifi] conectando...` | Nome ou senha da rede errados, ou rede em 5 GHz | Conferir o `secrets.h`; o ESP32 só enxerga redes de 2,4 GHz |
+| `[mqtt] falhou (rc=-2)` | IP do broker errado no `secrets.h` (causa mais comum), placa em outra rede, ou stack fora do ar | Rodar `.\scripts\broker.ps1` e colar o IP que ele indicar; conferir que a placa entrou na mesma rede |
+| Wi-Fi e MQTT conectam, mas o Grafana fica vazio | Placa gravada com um environment `_bancada`, que por definição não publica | Regravar com o environment normal (`maquina01`, `maquina02` ou `maquina03`) |
 | Dashboard vazio | Ingestão parada ou sem dados | `docker compose --project-directory infra logs ingestao` |
 | Temperatura marcando `nan` | DHT22 mal ligado ou no pino errado | Conferir VCC em 3,3 V e o dado no GPIO 4 |
 | Vazão sempre em 0 | Bancada seca (esperado), divisor mal montado ou falta de pull-up | Soprar na turbina; se continuar em 0, conferir o divisor e o pull-up no esquema elétrico |
