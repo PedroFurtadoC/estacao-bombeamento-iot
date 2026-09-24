@@ -1,6 +1,6 @@
 # 05 - Análise (Desafio 4)
 
-As perguntas 1 a 5 são respondidas com a base coletada em 21/09/2026: 2160
+As perguntas 1 a 5 são respondidas com a base coletada em 23/09/2026: 2160
 registros, 720 por máquina, exportados para `dados/export/telemetria.csv` pelo
 `backend/tools/exportar_csv.py`. É um backfill de 2 h do simulador, com a
 janela de anomalia na M01. Se a base for gerada de novo (por exemplo com as
@@ -10,8 +10,8 @@ arquitetura e não dependem da base.
 
 ## 1. Qual máquina apresentou maior temperatura?
 
-A M01, com pico de 82,6 °C em 21/09/2026 às 08:13:51. A M02 e a M03 não
-passaram de 74,1 °C e 75,0 °C, ou seja, ficaram dentro da faixa normal o tempo
+A M01, com pico de 83,3 °C em 23/09/2026 às 21:08:41. A M02 e a M03 não
+passaram de 72,4 °C e 70,9 °C, ou seja, ficaram dentro da faixa normal o tempo
 todo.
 
 Onde ver: painel "Temperatura ao longo do tempo", olhando o máximo de cada
@@ -19,21 +19,21 @@ série; ou `max()` em Flux agrupado por `machine`.
 
 ## 2. Qual máquina apresentou maior vibração?
 
-De novo a M01, com 5,8 mm/s às 08:11:21, acima dos 5 mm/s que definimos como
-faixa crítica. M02 e M03 chegaram no máximo a 3,4 e 3,2 mm/s.
+De novo a M01, com 5,8 mm/s às 21:06:01, acima dos 5 mm/s que definimos como
+faixa crítica. M02 e M03 chegaram no máximo a 3,4 mm/s.
 
 Mesmo procedimento, no painel de vibração.
 
 ## 3. Existe relação entre temperatura e corrente?
 
 Existe, e é positiva. Nas 720 leituras da M01 o coeficiente de Pearson entre
-temperatura e corrente deu r = 0,63. Separando as duas fases da mesma máquina
+temperatura e corrente deu r = 0,71. Separando as duas fases da mesma máquina
 a relação fica mais clara:
 
 | Fase (M01) | Leituras | Temperatura | Corrente | Rotação | Vibração | Vazão |
 |---|---|---|---|---|---|---|
-| Normal | 684 | 68,1 °C | 8,1 A | 3494 RPM | 1,65 mm/s | 30,0 L/min |
-| Anomalia | 36 | 81,6 °C | 11,4 A | 3258 RPM | 5,40 mm/s | 12,5 L/min |
+| Normal | 681 | 69,6 °C | 7,0 A | 3515 RPM | 1,96 mm/s | 32,9 L/min |
+| Anomalia | 39 | 81,6 °C | 11,2 A | 3273 RPM | 5,30 mm/s | 13,3 L/min |
 
 A explicação é direta: mais carga no motor puxa mais corrente, e a corrente
 aquece o enrolamento por efeito Joule (I²R). Por isso as duas séries sobem
@@ -41,11 +41,11 @@ juntas enquanto a rotação cai: é a assinatura de sobrecarga.
 
 ## 4. Em que momento ocorreu a condição anormal?
 
-Em 21/09/2026, das 08:08:01 às 08:13:51: 6 minutos, 36 leituras seguidas fora
-do normal, 34 delas já na faixa crítica. Foi na M01, puxada pela temperatura,
-que chegou aos 82,6 °C. No mesmo intervalo a vibração foi a 5,8 mm/s, a
-corrente a 11,4 A, a rotação caiu para 3234 RPM e a vazão despencou de 30 para
-12,5 L/min.
+Em 23/09/2026, das 21:03:51 às 21:10:11: 6 minutos, 39 leituras seguidas fora
+do normal, 33 delas já na faixa crítica. Foi na M01, puxada pela temperatura,
+que chegou aos 83,3 °C. No mesmo intervalo a vibração foi a 5,8 mm/s, a
+corrente a 11,7 A, a rotação caiu para 3221 RPM e a vazão despencou de 33 para
+11,3 L/min.
 
 Dá para ver dando zoom no painel de temperatura; o painel de eventos de alerta
 delimita a janela.

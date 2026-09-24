@@ -31,7 +31,9 @@ venv/
 infra/data/
 *.csv
 !docs/assets/*.csv
-dados/export/
+# a base do Desafio 4 vai versionada: e ela que sustenta o 05-analise.md
+dados/export/*
+!dados/export/telemetria.csv
 
 # --- IDE / SO ---
 .vscode/
